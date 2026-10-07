@@ -30,8 +30,8 @@
 <body>
 
 <div class="card" id="login-view">
-  <h2>🎯 找正字挑戰</h2>
-  <p style="color: #64748b; text-align: center; font-size: 0.95rem;">點擊正確字詞送出，大螢幕統一揭曉答案！</p>
+  <h2>🎯 逐字文字挑戰</h2>
+  <p style="color: #64748b; text-align: center; font-size: 0.95rem;">每選對一個字皆可得分，踩到錯字扣分！</p>
   <input type="text" id="student-name" placeholder="請輸入姓名或座號（例：05 王小明）">
   <button onclick="joinGame()">進入挑戰</button>
 </div>
@@ -55,14 +55,13 @@
 </div>
 
 <script>
-  // 請填入您自己的 GAS Web App URL
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbycvVxlNqwhwAMlAfVukKp3pHKnZRqc4ljBCNhiC49qQY879bbuUwLpH69Wo6S5efkp/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbzhjVMPOKFiTwSHUXTbm9x8exuCnY0VhDwdTPu3u_iJ4VxrfPEJRhkMhKl1Nx5IbpLY/exec"; // 請替換成你的 GAS URL
 
   let studentName = "";
   let currentQIndex = 0;
   let articleText = "";
   let selectedIndices = [];
-  let submittedRecords = [];
+  let submittedIndicesMap = []; // 存 { index, char }
   let pollingTimer = null;
   let isCurrentQRevealed = false;
 
@@ -83,12 +82,11 @@
       const res = await fetch(`${GAS_URL}?action=getCurrentQuestion&t=${Date.now()}`);
       const data = await res.json();
 
-      // 偵測到老師切換題目
       if (data.qIndex !== currentQIndex) {
         currentQIndex = data.qIndex;
         articleText = data.text;
         isCurrentQRevealed = false;
-        submittedRecords = [];
+        submittedIndicesMap = [];
         selectedIndices = [];
 
         document.getElementById("q-label").innerText = `第 ${currentQIndex} / ${data.totalQuestions} 題`;
@@ -96,7 +94,6 @@
         renderText(articleText);
       }
 
-      // 若本題尚未公布，向後端確認大螢幕是否已公布答案
       if (!isCurrentQRevealed) {
         const statusRes = await fetch(`${GAS_URL}?action=checkStudentStatus&name=${encodeURIComponent(studentName)}&qIndex=${currentQIndex}&t=${Date.now()}`);
         const statusData = await statusRes.json();
@@ -145,8 +142,7 @@
   }
 
   async function submitSelection() {
-    const word = document.getElementById("current-word").innerText;
-    if (!word || word === "尚未選擇") return;
+    if (selectedIndices.length === 0) return;
 
     const submitBtn = document.getElementById("submit-btn");
     const toast = document.getElementById("msg-toast");
@@ -155,10 +151,16 @@
     submitBtn.innerText = "傳送中...";
     toast.innerText = "";
 
+    // 逐字封裝
+    const charPayload = selectedIndices.map(idx => ({
+      index: idx,
+      char: articleText[idx]
+    }));
+
     try {
       const response = await fetch(GAS_URL, {
         method: "POST",
-        body: JSON.stringify({ name: studentName, word: word })
+        body: JSON.stringify({ name: studentName, chars: charPayload })
       });
       const res = await response.json();
 
@@ -168,11 +170,10 @@
         return;
       }
 
-      const currentIndices = [...selectedIndices];
-      submittedRecords.push({ word: word, indices: currentIndices });
-
-      currentIndices.forEach(idx => {
-        const el = document.querySelector(`.char[data-index='${idx}']`);
+      // 標註為已送出狀態
+      charPayload.forEach(item => {
+        submittedIndicesMap.push(item);
+        const el = document.querySelector(`.char[data-index='${item.index}']`);
         if (el) {
           el.className = "char submitted";
           el.onclick = null;
@@ -180,7 +181,7 @@
       });
 
       toast.style.color = "#0284c7";
-      toast.innerText = "✓ 答案已成功記錄！";
+      toast.innerText = `✓ 已送出 ${charPayload.length} 個字！`;
     } catch (e) {
       toast.style.color = "#dc2626";
       toast.innerText = "連線失敗，請再試一次！";
@@ -195,17 +196,15 @@
     document.getElementById("my-score").innerText = `${statusData.totalScore} 分`;
     document.getElementById("selection-box").innerHTML = `
       <div style="font-size: 1.1rem; font-weight: bold; color: #1e293b;">📢 本題已公布答案！</div>
-      <p style="color: #64748b; margin: 4px 0 0;">綠色為正字加分，紅色為錯字扣分。等待老師切換下一題...</p>
+      <p style="color: #64748b; margin: 4px 0 0;">逐字判定：綠色為正字加分，紅色為錯字扣分。</p>
     `;
 
-    // 翻牌顯示紅綠顏色
-    statusData.answers.forEach(item => {
-      const rec = submittedRecords.find(r => r.word === item.word);
-      if (rec) {
-        rec.indices.forEach(idx => {
-          const el = document.querySelector(`.char[data-index='${idx}']`);
-          if (el) el.className = `char ${item.isCorrect ? 'correct' : 'wrong'}`;
-        });
+    // 逐字翻牌
+    submittedIndicesMap.forEach(item => {
+      const matched = statusData.answers.find(a => a.char === item.char);
+      const el = document.querySelector(`.char[data-index='${item.index}']`);
+      if (el && matched) {
+        el.className = `char ${matched.isCorrect ? 'correct' : 'wrong'}`;
       }
     });
   }
