@@ -100,8 +100,8 @@
 <body>
 
 <div class="card" id="login-view">
-  <h2>🎯 逐字文字挑戰</h2>
-  <p style="color: #64748b; text-align: center; font-size: 0.95rem;">每選對一個字皆可得分，踩到錯字扣分！</p>
+  <h2>🔍 抓錯字挑戰</h2>
+  <p style="color: #64748b; text-align: center; font-size: 0.95rem;">找出文章中的錯別字，大螢幕統一揭曉答案！</p>
   <input type="text" id="student-name" placeholder="請輸入姓名或座號（例：05 王小明）">
   <button id="join-btn" onclick="joinGame()">進入挑戰</button>
 </div>
@@ -125,8 +125,7 @@
 </div>
 
 <script>
-  // 【請替換為你的 Apps Script 部署網址】
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbyooXE-Bs9a2Y-8p199al-iiioJfwcOoZdS-y--rGDDqeoDWkC2d1YNxeIVoK9Z0y8/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbw8dSyz8qwD1wPCy4srj65dNqw0yA5CVrrj2om76AvtMwTDElutTjslfdGTkd-jmOjL/exec"; // 請填入您的 Web App 網址
 
   let studentName = "";
   let currentQIndex = -1;
@@ -144,7 +143,6 @@
     joinBtn.innerText = "連線登入中...";
     joinBtn.disabled = true;
 
-    // 向伺服器註冊登入（大螢幕會即時顯示學生名字）
     try {
       await fetch(GAS_URL, {
         method: "POST",
@@ -158,7 +156,6 @@
     document.getElementById("game-view").style.display = "block";
     document.getElementById("display-name").innerText = studentName;
 
-    // 啟動定時輪詢同步
     syncQuestion();
     pollingTimer = setInterval(syncQuestion, 3000);
   }
@@ -168,7 +165,6 @@
       const res = await fetch(`${GAS_URL}?action=getCurrentQuestion&t=${Date.now()}`);
       const data = await res.json();
 
-      // 檢查是否換題或剛開局
       if (data.qIndex !== currentQIndex) {
         currentQIndex = data.qIndex;
         articleText = data.text;
@@ -176,7 +172,6 @@
         submittedIndicesMap = [];
         selectedIndices = [];
 
-        // 題目處於未開始（第 0 階段）
         if (currentQIndex === 0) {
           document.getElementById("q-label").innerText = "準備中";
           document.getElementById("text-container").innerText = "🎮 挑戰尚未開始，請稍候老師發送題目！";
@@ -186,13 +181,11 @@
           return;
         }
 
-        // 正常進入題目
         document.getElementById("q-label").innerText = `第 ${currentQIndex} / ${data.totalQuestions} 題`;
         resetSelectionBoxUI();
         renderText(articleText);
       }
 
-      // 如果當前題目已開始且尚未揭曉，向後端確認大螢幕是否已公布本題答案
       if (currentQIndex > 0 && !isCurrentQRevealed) {
         const statusRes = await fetch(`${GAS_URL}?action=checkStudentStatus&name=${encodeURIComponent(studentName)}&qIndex=${currentQIndex}&t=${Date.now()}`);
         const statusData = await statusRes.json();
@@ -250,7 +243,6 @@
     submitBtn.innerText = "傳送中...";
     toast.innerText = "";
 
-    // 逐字拆解封裝
     const charPayload = selectedIndices.map(idx => ({
       index: idx,
       char: articleText[idx]
@@ -269,7 +261,6 @@
         return;
       }
 
-      // 標註為已送出（中立灰色）
       charPayload.forEach(item => {
         submittedIndicesMap.push(item);
         const el = document.querySelector(`.char[data-index='${item.index}']`);
@@ -295,10 +286,9 @@
     document.getElementById("my-score").innerText = `${statusData.totalScore} 分`;
     document.getElementById("selection-box").innerHTML = `
       <div style="font-size: 1.1rem; font-weight: bold; color: #1e293b;">📢 本題已公布答案！</div>
-      <p style="color: #64748b; margin: 4px 0 0;">逐字判定：綠色為正字加分，紅色為錯字扣分。</p>
+      <p style="color: #64748b; margin: 4px 0 0;">綠色為抓對錯字加分，紅色為誤抓一般字扣分。</p>
     `;
 
-    // 逐字翻牌成紅或綠
     submittedIndicesMap.forEach(item => {
       const matched = statusData.answers.find(a => a.char === item.char);
       const el = document.querySelector(`.char[data-index='${item.index}']`);
