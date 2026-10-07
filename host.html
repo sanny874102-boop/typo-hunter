@@ -19,6 +19,7 @@
     .btn-blue { background: #3b82f6; color: white; }
     .btn-orange { background: #f97316; color: white; }
     .btn-red { background: #ef4444; color: white; }
+    .btn-purple { background: #8b5cf6; color: white; }
     .btn-gray { background: #475569; color: white; }
     .btn:hover { opacity: 0.9; }
     table { width: 100%; border-collapse: collapse; margin-top: 16px; }
@@ -26,11 +27,18 @@
     th { color: #94a3b8; }
     #qrcode { display: flex; justify-content: center; margin: 16px 0; background: white; padding: 14px; border-radius: 8px; width: fit-content; }
     
-    /* 管理員控制區塊樣式 */
     .admin-locked { display: none !important; }
     .badge-status { font-size: 0.85rem; padding: 4px 8px; border-radius: 4px; vertical-align: middle; margin-left: 8px; }
     .badge-locked { background: #64748b; color: #f8fafc; }
     .badge-unlocked { background: #10b981; color: #ffffff; }
+
+    /* 玩家列表標籤樣式 */
+    .players-box { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; max-height: 140px; overflow-y: auto; padding: 10px; background: #0b1120; border-radius: 8px; border: 1px solid #334155; }
+    .player-tag { background: #334155; color: #38bdf8; padding: 4px 10px; border-radius: 20px; font-size: 0.9rem; font-weight: bold; animation: popIn 0.3s ease-out; }
+    @keyframes popIn {
+      0% { transform: scale(0.6); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
   </style>
 </head>
 <body>
@@ -41,17 +49,15 @@
     <span id="admin-badge" class="badge-status badge-locked">看板模式</span>
     
     <div class="q-control">
+      <button id="start-game-btn" class="btn btn-purple admin-ctrl admin-locked" onclick="startFirstQuestion()">🚀 開始第 1 題</button>
       <button class="btn btn-gray admin-ctrl admin-locked" onclick="changeQuestion(-1)">◀ 上一題</button>
-      <span id="current-q-text" style="font-weight: bold; font-size: 1.1rem; color: #38bdf8;">第 1 題</span>
+      <span id="current-q-text" style="font-weight: bold; font-size: 1.1rem; color: #38bdf8;">準備中</span>
       <button class="btn btn-blue admin-ctrl admin-locked" onclick="changeQuestion(1)">下一題 ▶</button>
     </div>
   </div>
 
   <div>
-    <!-- 管理員切換按鈕 -->
     <button id="auth-btn" class="btn btn-blue" onclick="toggleAdminMode()">🔑 管理員登入</button>
-    
-    <!-- 受保護的操作按鈕群 -->
     <button class="btn btn-orange admin-ctrl admin-locked" onclick="revealAnswers()">📢 公布本題答案</button>
     <button class="btn btn-green admin-ctrl admin-locked" onclick="exportToExcel()">📊 下載總成績 Excel</button>
     <button class="btn btn-red admin-ctrl admin-locked" onclick="resetRound()">⚠️ 清空總紀錄</button>
@@ -61,7 +67,7 @@
 <div class="container">
   <div class="panel">
     <h2>📄 文章內容</h2>
-    <div id="passage-box" class="passage">載入文章中...</div>
+    <div id="passage-box" class="passage">🎮 遊戲準備中，等待老師開始...</div>
   </div>
 
   <div class="panel">
@@ -69,7 +75,13 @@
     <div id="qrcode"></div>
     <p id="student-url" style="color: #94a3b8; font-size: 0.85rem; word-break: break-all;"></p>
 
-    <h3>🏆 全場累積排行榜</h3>
+    <!-- 已登入玩家名單展示區 -->
+    <h3>👥 已連線玩家 (<span id="player-count" style="color: #38bdf8;">0</span> 人)</h3>
+    <div class="players-box" id="players-list">
+      <span style="color: #64748b; font-size: 0.9rem;">等待學生掃碼加入...</span>
+    </div>
+
+    <h3 style="margin-top: 24px;">🏆 全場累積排行榜</h3>
     <table>
       <thead>
         <tr><th>排名</th><th>姓名</th><th>正字/錯字</th><th>累計總分</th></tr>
@@ -82,20 +94,18 @@
 </div>
 
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbzhjVMPOKFiTwSHUXTbm9x8exuCnY0VhDwdTPu3u_iJ4VxrfPEJRhkMhKl1Nx5IbpLY/exec"; // 請確認此為您的正確 GAS URL
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbyooXE-Bs9a2Y-8p199al-iiioJfwcOoZdS-y--rGDDqeoDWkC2d1YNxeIVoK9Z0y8/exec"; // 請確認已填入正確的 GAS URL
   const ADMIN_PASS = "4321";
   let isAdmin = false;
   let hostData = null;
 
   function toggleAdminMode() {
     if (isAdmin) {
-      // 登出
       isAdmin = false;
       applyAdminUI();
       return;
     }
 
-    // 彈出密碼輸入框（不顯示任何提示文字）
     const input = prompt("請輸入密碼：");
     if (input === ADMIN_PASS) {
       isAdmin = true;
@@ -116,6 +126,9 @@
       authBtn.className = "btn btn-gray";
       badge.innerText = "管理員模式";
       badge.className = "badge-status badge-unlocked";
+      if (hostData && hostData.currentQ === 0) {
+        document.getElementById("start-game-btn").style.display = "inline-block";
+      }
     } else {
       controls.forEach(el => el.classList.add("admin-locked"));
       authBtn.innerText = "🔑 管理員登入";
@@ -135,7 +148,7 @@
     });
 
     loadData();
-    setInterval(loadData, 4000);
+    setInterval(loadData, 3000); // 每 3 秒更新一次玩家與排行榜
   };
 
   async function loadData() {
@@ -144,18 +157,38 @@
       const data = await res.json();
       hostData = data;
 
-      document.getElementById("current-q-text").innerText = `第 ${data.currentQ} / ${data.totalQuestions} 題`;
+      // 渲染已連線玩家
+      renderPlayers(data.players || []);
 
-      if (data.isRevealed) {
-        renderRevealedPassage(data);
+      if (data.currentQ === 0) {
+        document.getElementById("current-q-text").innerText = "準備中";
+        document.getElementById("passage-box").innerText = "🎮 遊戲準備中，等待老師開始第 1 題！";
+        document.getElementById("start-game-btn").style.display = isAdmin ? "inline-block" : "none";
       } else {
-        document.getElementById("passage-box").innerText = data.text;
+        document.getElementById("current-q-text").innerText = `第 ${data.currentQ} / ${data.totalQuestions} 題`;
+        document.getElementById("start-game-btn").style.display = "none";
+
+        if (data.isRevealed) {
+          renderRevealedPassage(data);
+        } else {
+          document.getElementById("passage-box").innerText = data.text;
+        }
       }
 
       renderLeaderboard(data.stats);
     } catch (e) {
       console.error("更新失敗", e);
     }
+  }
+
+  function renderPlayers(players) {
+    document.getElementById("player-count").innerText = players.length;
+    const box = document.getElementById("players-list");
+    if (players.length === 0) {
+      box.innerHTML = `<span style="color: #64748b; font-size: 0.9rem;">等待學生掃碼加入...</span>`;
+      return;
+    }
+    box.innerHTML = players.map(name => `<span class="player-tag">👤 ${name}</span>`).join("");
   }
 
   function renderLeaderboard(stats) {
@@ -178,8 +211,13 @@
     `).join("");
   }
 
+  async function startFirstQuestion() {
+    await fetch(`${GAS_URL}?action=switchQuestion&qIndex=1&t=${Date.now()}`);
+    loadData();
+  }
+
   async function changeQuestion(offset) {
-    if (!hostData) return;
+    if (!hostData || hostData.currentQ === 0) return alert("請先點擊【🚀 開始第 1 題】！");
     const nextQ = hostData.currentQ + offset;
     if (nextQ < 1 || nextQ > hostData.totalQuestions) {
       return alert("已經沒有更多題目了！");
@@ -190,7 +228,7 @@
   }
 
   async function revealAnswers() {
-    if (!hostData) return;
+    if (!hostData || hostData.currentQ === 0) return alert("挑戰尚未開始！");
     await fetch(`${GAS_URL}?action=setReveal&t=${Date.now()}`);
     loadData();
   }
@@ -225,10 +263,10 @@
   }
 
   async function resetRound() {
-    if (!confirm("確定要清空所有作答數據並重回第 1 題嗎？")) return;
+    if (!confirm("確定要清空所有紀錄並回到未開始狀態嗎？")) return;
     await fetch(`${GAS_URL}?action=resetScores&t=${Date.now()}`);
     loadData();
-    alert("已重設整場遊戲！");
+    alert("已重設遊戲為準備階段！");
   }
 </script>
 </body>
