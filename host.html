@@ -2,45 +2,53 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>抓錯字大作戰 - 大螢幕主控台</title>
-  <!-- 引入 QR Code 產生庫 與 SheetJS (Excel匯出庫) -->
+  <title>文字挑戰 - 大螢幕主控台</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 24px; background: #0f172a; color: #f8fafc; }
     .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #334155; padding-bottom: 16px; margin-bottom: 24px; }
+    .q-control { display: flex; align-items: center; gap: 10px; background: #1e293b; padding: 6px 14px; border-radius: 8px; }
     .container { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
-    .panel { background: #1e293b; border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2); }
-    .passage { font-size: 1.8rem; line-height: 2.2; letter-spacing: 3px; background: #0f172a; padding: 24px; border-radius: 8px; border: 1px solid #334155; }
+    .panel { background: #1e293b; border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
+    .passage { font-size: 1.8rem; line-height: 2.2; letter-spacing: 3px; background: #0b1120; padding: 24px; border-radius: 8px; border: 1px solid #334155; min-height: 180px; }
     .highlight-typo { background-color: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
-    .correction-badge { background-color: #22c55e; color: white; font-size: 1rem; vertical-align: super; padding: 2px 6px; border-radius: 4px; margin-left: 2px; }
-    .btn { padding: 10px 18px; font-size: 1rem; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; margin-right: 8px; transition: 0.2s; }
+    .correction-badge { background-color: #22c55e; color: white; font-size: 1.05rem; vertical-align: super; padding: 2px 6px; border-radius: 4px; margin-left: 2px; }
+    .btn { padding: 9px 16px; font-size: 0.95rem; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
     .btn-green { background: #22c55e; color: white; }
     .btn-blue { background: #3b82f6; color: white; }
     .btn-orange { background: #f97316; color: white; }
     .btn-red { background: #ef4444; color: white; }
+    .btn-gray { background: #475569; color: white; }
+    .btn:hover { opacity: 0.9; }
     table { width: 100%; border-collapse: collapse; margin-top: 16px; }
     th, td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; }
     th { color: #94a3b8; }
-    #qrcode { display: flex; justify-content: center; margin: 16px 0; background: white; padding: 16px; border-radius: 8px; width: fit-content; }
+    #qrcode { display: flex; justify-content: center; margin: 16px 0; background: white; padding: 14px; border-radius: 8px; width: fit-content; }
   </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>🎮 抓錯字大挑戰 - 投影主控台</h1>
   <div>
-    <button class="btn btn-blue" onclick="loadData()">🔄 刷新榜單</button>
-    <button class="btn btn-orange" onclick="revealAnswers()">📢 公布答案與結算</button>
-    <button class="btn btn-green" onclick="exportToExcel()">📊 下載 Excel 成績</button>
-    <button class="btn btn-red" onclick="resetRound()">⚠️ 清空紀錄</button>
+    <h1 style="margin: 0 0 6px 0;">🎮 文字挑戰 - 大螢幕主控台</h1>
+    <div class="q-control">
+      <button class="btn btn-gray" onclick="changeQuestion(-1)">◀ 上一題</button>
+      <span id="current-q-text" style="font-weight: bold; font-size: 1.1rem; color: #38bdf8;">第 1 題</span>
+      <button class="btn btn-blue" onclick="changeQuestion(1)">下一題 ▶</button>
+    </div>
+  </div>
+  <div>
+    <button class="btn btn-orange" onclick="revealAnswers()">📢 公布本題答案</button>
+    <button class="btn btn-green" onclick="exportToExcel()">📊 下載總成績 Excel</button>
+    <button class="btn btn-red" onclick="resetRound()">⚠️ 清空總紀錄</button>
   </div>
 </div>
 
 <div class="container">
   <div class="panel">
     <h2>📄 文章內容</h2>
-    <div id="passage-box" class="passage">載入中...</div>
+    <div id="passage-box" class="passage">載入文章中...</div>
   </div>
 
   <div class="panel">
@@ -48,52 +56,52 @@
     <div id="qrcode"></div>
     <p id="student-url" style="color: #94a3b8; font-size: 0.85rem; word-break: break-all;"></p>
 
-    <h3>🏆 即時英雄榜</h3>
+    <h3>🏆 全場累積排行榜</h3>
     <table>
       <thead>
-        <tr><th>排名</th><th>姓名</th><th>答對/錯</th><th>總分</th></tr>
+        <tr><th>排名</th><th>姓名</th><th>正字/錯字</th><th>累計總分</th></tr>
       </thead>
       <tbody id="leaderboard-body">
-        <tr><td colspan="4" style="text-align:center; color: #64748b;">暫無作答紀錄</td></tr>
+        <tr><td colspan="4" style="text-align:center; color: #64748b;">等待學生作答中...</td></tr>
       </tbody>
     </table>
   </div>
 </div>
 
 <script>
-  // 請在此填入您的 GAS Web App URL
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbw_37SRtaZ21xsiDWgNbdOBRtwSaHw8SJIO8JvT9_4OQA29OpsJKRvmK39DQNIis4py/exec";
-  let cachedResults = null;
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbxTMPKEbx9u0NxNWgKBXxxkrXRKnuDfIlu3Tdt-z0C9jhdHeL_d_qIFc-VkEkVcjeBB/exec"; // 請替換成你的 Apps Script 網址
+  let hostData = null;
 
   window.onload = function() {
-    // 自動生成指向學生端的 QR Code (預設同個路徑下的 index.html)
     const playerUrl = window.location.href.replace(/host\.html.*$/, 'index.html');
     document.getElementById("student-url").innerText = playerUrl;
     new QRCode(document.getElementById("qrcode"), {
       text: playerUrl,
-      width: 160,
-      height: 160
+      width: 140,
+      height: 140
     });
 
     loadData();
-    // 每 5 秒自動輪詢一次成績排行榜
-    setInterval(loadData, 5000);
+    setInterval(loadData, 4000);
   };
 
   async function loadData() {
     try {
-      const res = await fetch(`${GAS_URL}?action=getResults`);
+      const res = await fetch(`${GAS_URL}?action=getHostData`);
       const data = await res.json();
-      cachedResults = data;
+      hostData = data;
 
-      // 如果尚未公布解答，維持原始文章
-      if (!window.isRevealed) {
+      document.getElementById("current-q-text").innerText = `第 ${data.currentQ} / ${data.totalQuestions} 題`;
+
+      if (data.isRevealed) {
+        renderRevealedPassage(data);
+      } else {
         document.getElementById("passage-box").innerText = data.text;
       }
 
       renderLeaderboard(data.stats);
     } catch (e) {
-      console.error("載入失敗", e);
+      console.error("更新失敗", e);
     }
   }
 
@@ -111,52 +119,63 @@
       <tr>
         <td>${idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : idx + 1}</td>
         <td><b>${player.name}</b></td>
-        <td><span style="color:#4ade80;">${player.correctCount}</span> / <span style="color:#f87171;">${player.wrongCount}</span></td>
+        <td><span style="color:#22c55e;">${player.correctCount}</span> / <span style="color:#ef4444;">${player.wrongCount}</span></td>
         <td style="color:#38bdf8; font-weight:bold;">${player.score}</td>
       </tr>
     `).join("");
   }
 
-  function revealAnswers() {
-    if (!cachedResults) return;
-    window.isRevealed = true;
-    let html = cachedResults.text;
+  async function changeQuestion(offset) {
+    if (!hostData) return;
+    const nextQ = hostData.currentQ + offset;
+    if (nextQ < 1 || nextQ > hostData.totalQuestions) {
+      return alert("已經沒有更多題目了！");
+    }
 
-    // 將所有錯字高亮，並標上正確字
-    cachedResults.typos.forEach((typo, i) => {
-      const correct = cachedResults.corrections[i] || "";
+    await fetch(`${GAS_URL}?action=switchQuestion&qIndex=${nextQ}`);
+    loadData();
+  }
+
+  async function revealAnswers() {
+    if (!hostData) return;
+    await fetch(`${GAS_URL}?action=setReveal`);
+    loadData();
+  }
+
+  function renderRevealedPassage(data) {
+    let html = data.text;
+    data.typos.forEach((typo, i) => {
+      const correct = data.corrections[i] || "";
       const regex = new RegExp(typo, "g");
-      html = html.replace(regex, `<span class="highlight-typo">${typo}</span><span class="correction-badge">改為: ${correct}</span>`);
+      html = html.replace(regex, `<span class="highlight-typo">${typo}</span><span class="correction-badge">應為: ${correct}</span>`);
     });
-
     document.getElementById("passage-box").innerHTML = html;
   }
 
   function exportToExcel() {
-    if (!cachedResults || Object.keys(cachedResults.stats).length === 0) {
-      return alert("目前沒有作答成績可匯出！");
+    if (!hostData || Object.keys(hostData.stats).length === 0) {
+      return alert("目前沒有作答紀錄可匯出！");
     }
 
-    const exportData = Object.entries(cachedResults.stats).map(([name, stat], idx) => ({
+    const exportData = Object.entries(hostData.stats).map(([name, stat], idx) => ({
       "排名": idx + 1,
       "姓名/座號": name,
-      "答對次數": stat.correctCount,
-      "答錯次數": stat.wrongCount,
+      "累計選對次數": stat.correctCount,
+      "累計踩錯次數": stat.wrongCount,
       "總積分": stat.score
     })).sort((a, b) => b["總積分"] - a["總積分"]);
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "成績總表");
-    XLSX.writeFile(workbook, `抓錯字遊戲成績單_${new Date().toISOString().slice(0,10)}.xlsx`);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "挑戰總成績");
+    XLSX.writeFile(workbook, `文字挑戰累計成績單_${new Date().toISOString().slice(0,10)}.xlsx`);
   }
 
   async function resetRound() {
-    if (!confirm("確定要清空本回合所有成績嗎？這會清除資料庫中的作答數據。")) return;
+    if (!confirm("確定要清空所有作答數據並重回第 1 題嗎？")) return;
     await fetch(`${GAS_URL}?action=resetScores`);
-    window.isRevealed = false;
     loadData();
-    alert("成績已清空，可開始新一輪！");
+    alert("已重設整場遊戲！");
   }
 </script>
 </body>
