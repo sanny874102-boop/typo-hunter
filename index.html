@@ -6,22 +6,92 @@
   <title>文字挑戰 - 學生端</title>
   <style>
     * { box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 16px; background-color: #f1f5f9; color: #1e293b; }
-    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); max-width: 520px; margin: 0 auto; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+      margin: 0; 
+      padding: 16px; 
+      background-color: #f1f5f9; 
+      color: #1e293b; 
+    }
+    .card { 
+      background: white; 
+      padding: 20px; 
+      border-radius: 12px; 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06); 
+      max-width: 520px; 
+      margin: 0 auto; 
+    }
     h2 { margin-top: 0; text-align: center; color: #0f172a; }
-    input[type="text"] { width: 100%; padding: 12px; font-size: 16px; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 12px; }
-    button { width: 100%; padding: 12px; font-size: 16px; border: none; border-radius: 8px; background-color: #2563eb; color: white; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    input[type="text"] { 
+      width: 100%; 
+      padding: 12px; 
+      font-size: 16px; 
+      border: 1px solid #cbd5e1; 
+      border-radius: 8px; 
+      margin-bottom: 12px; 
+    }
+    button { 
+      width: 100%; 
+      padding: 12px; 
+      font-size: 16px; 
+      border: none; 
+      border-radius: 8px; 
+      background-color: #2563eb; 
+      color: white; 
+      font-weight: bold; 
+      cursor: pointer; 
+      transition: 0.2s; 
+    }
     button:active { background-color: #1d4ed8; }
-    .status-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 10px 14px; background: #e2e8f0; border-radius: 8px; font-weight: bold; }
-    .q-badge { background: #3b82f6; color: white; padding: 3px 8px; border-radius: 6px; font-size: 0.85rem; margin-left: 6px; }
-    .passage { line-height: 2.2; font-size: 1.35rem; letter-spacing: 2px; word-break: break-all; user-select: none; border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; background: #fafafa; }
-    .char { cursor: pointer; padding: 2px 4px; border-radius: 4px; transition: 0.15s; display: inline-block; }
+    .status-bar { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      margin-bottom: 12px; 
+      padding: 10px 14px; 
+      background: #e2e8f0; 
+      border-radius: 8px; 
+      font-weight: bold; 
+    }
+    .q-badge { 
+      background: #3b82f6; 
+      color: white; 
+      padding: 3px 8px; 
+      border-radius: 6px; 
+      font-size: 0.85rem; 
+      margin-left: 6px; 
+    }
+    .passage { 
+      line-height: 2.2; 
+      font-size: 1.35rem; 
+      letter-spacing: 2px; 
+      word-break: break-all; 
+      user-select: none; 
+      border: 1px solid #e2e8f0; 
+      padding: 16px; 
+      border-radius: 8px; 
+      background: #fafafa; 
+      min-height: 120px;
+    }
+    .char { 
+      cursor: pointer; 
+      padding: 2px 4px; 
+      border-radius: 4px; 
+      transition: 0.15s; 
+      display: inline-block; 
+    }
     .char:hover { background-color: #cbd5e1; }
     .char.selected { background-color: #fed7aa; }
     .char.submitted { background-color: #94a3b8 !important; color: white !important; cursor: default; }
     .char.correct { background-color: #22c55e !important; color: white !important; cursor: default; }
     .char.wrong { background-color: #ef4444 !important; color: white !important; cursor: default; }
-    .selection-box { margin-top: 16px; padding: 14px; border: 2px dashed #cbd5e1; border-radius: 8px; text-align: center; }
+    .selection-box { 
+      margin-top: 16px; 
+      padding: 14px; 
+      border: 2px dashed #cbd5e1; 
+      border-radius: 8px; 
+      text-align: center; 
+    }
     .submit-btn { margin-top: 10px; background-color: #059669; }
     .submit-btn.disabled { opacity: 0.45; pointer-events: none; }
     #msg-toast { min-height: 24px; font-weight: bold; margin-top: 6px; }
@@ -33,19 +103,19 @@
   <h2>🎯 逐字文字挑戰</h2>
   <p style="color: #64748b; text-align: center; font-size: 0.95rem;">每選對一個字皆可得分，踩到錯字扣分！</p>
   <input type="text" id="student-name" placeholder="請輸入姓名或座號（例：05 王小明）">
-  <button onclick="joinGame()">進入挑戰</button>
+  <button id="join-btn" onclick="joinGame()">進入挑戰</button>
 </div>
 
 <div class="card" id="game-view" style="display: none;">
   <div class="status-bar" id="status-bar">
     <div>
       <span id="display-name"></span>
-      <span class="q-badge" id="q-label">第 1 題</span>
+      <span class="q-badge" id="q-label">準備中</span>
     </div>
     <span>總分：<span id="my-score" style="color: #2563eb;">0 分</span></span>
   </div>
 
-  <div class="passage" id="text-container">載入題目中...</div>
+  <div class="passage" id="text-container">等待挑戰開始...</div>
 
   <div class="selection-box" id="selection-box">
     <div>目前劃記：<b id="current-word" style="color: #2563eb; font-size: 1.25rem;">尚未選擇</b></div>
@@ -55,13 +125,14 @@
 </div>
 
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbzhjVMPOKFiTwSHUXTbm9x8exuCnY0VhDwdTPu3u_iJ4VxrfPEJRhkMhKl1Nx5IbpLY/exec"; // 請替換成你的 GAS URL
+  // 【請替換為你的 Apps Script 部署網址】
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbyooXE-Bs9a2Y-8p199al-iiioJfwcOoZdS-y--rGDDqeoDWkC2d1YNxeIVoK9Z0y8/exec";
 
   let studentName = "";
-  let currentQIndex = 0;
+  let currentQIndex = -1;
   let articleText = "";
   let selectedIndices = [];
-  let submittedIndicesMap = []; // 存 { index, char }
+  let submittedIndicesMap = [];
   let pollingTimer = null;
   let isCurrentQRevealed = false;
 
@@ -69,10 +140,25 @@
     studentName = document.getElementById("student-name").value.trim();
     if (!studentName) return alert("請輸入姓名或座號！");
 
+    const joinBtn = document.getElementById("join-btn");
+    joinBtn.innerText = "連線登入中...";
+    joinBtn.disabled = true;
+
+    // 向伺服器註冊登入（大螢幕會即時顯示學生名字）
+    try {
+      await fetch(GAS_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "login", name: studentName })
+      });
+    } catch (e) {
+      console.error("登入註冊失敗", e);
+    }
+
     document.getElementById("login-view").style.display = "none";
     document.getElementById("game-view").style.display = "block";
     document.getElementById("display-name").innerText = studentName;
 
+    // 啟動定時輪詢同步
     syncQuestion();
     pollingTimer = setInterval(syncQuestion, 3000);
   }
@@ -82,6 +168,7 @@
       const res = await fetch(`${GAS_URL}?action=getCurrentQuestion&t=${Date.now()}`);
       const data = await res.json();
 
+      // 檢查是否換題或剛開局
       if (data.qIndex !== currentQIndex) {
         currentQIndex = data.qIndex;
         articleText = data.text;
@@ -89,12 +176,24 @@
         submittedIndicesMap = [];
         selectedIndices = [];
 
+        // 題目處於未開始（第 0 階段）
+        if (currentQIndex === 0) {
+          document.getElementById("q-label").innerText = "準備中";
+          document.getElementById("text-container").innerText = "🎮 挑戰尚未開始，請稍候老師發送題目！";
+          document.getElementById("selection-box").innerHTML = `
+            <div style="color: #64748b; font-weight: bold;">連線成功，等待老師開始第 1 題...</div>
+          `;
+          return;
+        }
+
+        // 正常進入題目
         document.getElementById("q-label").innerText = `第 ${currentQIndex} / ${data.totalQuestions} 題`;
         resetSelectionBoxUI();
         renderText(articleText);
       }
 
-      if (!isCurrentQRevealed) {
+      // 如果當前題目已開始且尚未揭曉，向後端確認大螢幕是否已公布本題答案
+      if (currentQIndex > 0 && !isCurrentQRevealed) {
         const statusRes = await fetch(`${GAS_URL}?action=checkStudentStatus&name=${encodeURIComponent(studentName)}&qIndex=${currentQIndex}&t=${Date.now()}`);
         const statusData = await statusRes.json();
 
@@ -122,7 +221,7 @@
   }
 
   function toggleSelect(idx, span) {
-    if (isCurrentQRevealed || span.classList.contains("submitted") || span.classList.contains("correct") || span.classList.contains("wrong")) return;
+    if (currentQIndex === 0 || isCurrentQRevealed || span.classList.contains("submitted") || span.classList.contains("correct") || span.classList.contains("wrong")) return;
 
     if (selectedIndices.includes(idx)) {
       selectedIndices = selectedIndices.filter(i => i !== idx);
@@ -151,7 +250,7 @@
     submitBtn.innerText = "傳送中...";
     toast.innerText = "";
 
-    // 逐字封裝
+    // 逐字拆解封裝
     const charPayload = selectedIndices.map(idx => ({
       index: idx,
       char: articleText[idx]
@@ -170,7 +269,7 @@
         return;
       }
 
-      // 標註為已送出狀態
+      // 標註為已送出（中立灰色）
       charPayload.forEach(item => {
         submittedIndicesMap.push(item);
         const el = document.querySelector(`.char[data-index='${item.index}']`);
@@ -199,7 +298,7 @@
       <p style="color: #64748b; margin: 4px 0 0;">逐字判定：綠色為正字加分，紅色為錯字扣分。</p>
     `;
 
-    // 逐字翻牌
+    // 逐字翻牌成紅或綠
     submittedIndicesMap.forEach(item => {
       const matched = statusData.answers.find(a => a.char === item.char);
       const el = document.querySelector(`.char[data-index='${item.index}']`);
