@@ -69,7 +69,8 @@
 </div>
 
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbxTMPKEbx9u0NxNWgKBXxxkrXRKnuDfIlu3Tdt-z0C9jhdHeL_d_qIFc-VkEkVcjeBB/exec"; // 請替換成你的 Apps Script 網址
+  // 請填入您自己的 GAS Web App URL
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbycvVxlNqwhwAMlAfVukKp3pHKnZRqc4ljBCNhiC49qQY879bbuUwLpH69Wo6S5efkp/exec";
   let hostData = null;
 
   window.onload = function() {
@@ -87,7 +88,7 @@
 
   async function loadData() {
     try {
-      const res = await fetch(`${GAS_URL}?action=getHostData`);
+      const res = await fetch(`${GAS_URL}?action=getHostData&t=${Date.now()}`);
       const data = await res.json();
       hostData = data;
 
@@ -132,13 +133,13 @@
       return alert("已經沒有更多題目了！");
     }
 
-    await fetch(`${GAS_URL}?action=switchQuestion&qIndex=${nextQ}`);
+    await fetch(`${GAS_URL}?action=switchQuestion&qIndex=${nextQ}&t=${Date.now()}`);
     loadData();
   }
 
   async function revealAnswers() {
     if (!hostData) return;
-    await fetch(`${GAS_URL}?action=setReveal`);
+    await fetch(`${GAS_URL}?action=setReveal&t=${Date.now()}`);
     loadData();
   }
 
@@ -173,7 +174,7 @@
 
   async function resetRound() {
     if (!confirm("確定要清空所有作答數據並重回第 1 題嗎？")) return;
-    await fetch(`${GAS_URL}?action=resetScores`);
+    await fetch(`${GAS_URL}?action=resetScores&t=${Date.now()}`);
     loadData();
     alert("已重設整場遊戲！");
   }
