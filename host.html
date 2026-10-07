@@ -33,15 +33,15 @@
   <div>
     <h1 style="margin: 0 0 6px 0;">🎮 文字挑戰 - 大螢幕主控台</h1>
     <div class="q-control">
-      <button class="btn btn-gray" onclick="changeQuestion(-1)">◀ 上一題</button>
+      <button class="btn btn-gray" onclick="withAuth(() => changeQuestion(-1))">◀ 上一題</button>
       <span id="current-q-text" style="font-weight: bold; font-size: 1.1rem; color: #38bdf8;">第 1 題</span>
-      <button class="btn btn-blue" onclick="changeQuestion(1)">下一題 ▶</button>
+      <button class="btn btn-blue" onclick="withAuth(() => changeQuestion(1))">下一題 ▶</button>
     </div>
   </div>
   <div>
-    <button class="btn btn-orange" onclick="revealAnswers()">📢 公布本題答案</button>
-    <button class="btn btn-green" onclick="exportToExcel()">📊 下載總成績 Excel</button>
-    <button class="btn btn-red" onclick="resetRound()">⚠️ 清空總紀錄</button>
+    <button class="btn btn-orange" onclick="withAuth(revealAnswers)">📢 公布本題答案</button>
+    <button class="btn btn-green" onclick="withAuth(exportToExcel)">📊 下載總成績 Excel</button>
+    <button class="btn btn-red" onclick="withAuth(resetRound)">⚠️ 清空總紀錄</button>
   </div>
 </div>
 
@@ -69,9 +69,21 @@
 </div>
 
 <script>
-  // 請填入您自己的 GAS Web App URL
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbycvVxlNqwhwAMlAfVukKp3pHKnZRqc4ljBCNhiC49qQY879bbuUwLpH69Wo6S5efkp/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbzhjVMPOKFiTwSHUXTbm9x8exuCnY0VhDwdTPu3u_iJ4VxrfPEJRhkMhKl1Nx5IbpLY/exec"; // 請替換成你的 GAS URL
+  const ADMIN_PASS = "4321"; // 管理員密碼
   let hostData = null;
+
+  // 密碼驗證包裝函式（不包含任何密碼提示）
+  function withAuth(actionCallback) {
+    const input = prompt("請輸入密碼：");
+    if (input === ADMIN_PASS) {
+      actionCallback();
+    } else {
+      if (input !== null) {
+        alert("密碼錯誤！");
+      }
+    }
+  }
 
   window.onload = function() {
     const playerUrl = window.location.href.replace(/host\.html.*$/, 'index.html');
@@ -161,15 +173,15 @@
     const exportData = Object.entries(hostData.stats).map(([name, stat], idx) => ({
       "排名": idx + 1,
       "姓名/座號": name,
-      "累計選對次數": stat.correctCount,
-      "累計踩錯次數": stat.wrongCount,
+      "累計選對字數": stat.correctCount,
+      "累計踩錯字數": stat.wrongCount,
       "總積分": stat.score
     })).sort((a, b) => b["總積分"] - a["總積分"]);
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "挑戰總成績");
-    XLSX.writeFile(workbook, `文字挑戰累計成績單_${new Date().toISOString().slice(0,10)}.xlsx`);
+    XLSX.writeFile(workbook, `逐字挑戰累計成績單_${new Date().toISOString().slice(0,10)}.xlsx`);
   }
 
   async function resetRound() {
