@@ -3,73 +3,114 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>抓錯字大作戰 - 學生端</title>
+  <title>文字挑戰 - 學生端</title>
   <style>
     * { box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 16px; background-color: #f7f9fa; }
-    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); max-width: 500px; margin: 0 auto; }
-    h2 { margin-top: 0; color: #2c3e50; text-align: center; }
-    input[type="text"] { width: 100%; padding: 12px; font-size: 16px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 12px; }
-    button { width: 100%; padding: 12px; font-size: 16px; border: none; border-radius: 8px; background-color: #3b82f6; color: white; font-weight: bold; cursor: pointer; }
-    button:active { background-color: #2563eb; }
-    .status-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding: 8px 12px; background: #e0f2fe; border-radius: 8px; font-weight: bold; }
-    .score-badge { color: #0284c7; font-size: 1.2rem; }
-    .passage { line-height: 2.2; font-size: 1.3rem; letter-spacing: 2px; word-break: break-all; user-select: none; }
-    .char { cursor: pointer; padding: 2px 4px; border-radius: 4px; transition: 0.2s; display: inline-block; }
-    .char:hover { background-color: #e2e8f0; }
-    .char.correct { background-color: #4ade80 !important; color: white; }
-    .char.wrong { background-color: #f87171 !important; color: white; }
-    .selection-box { margin-top: 20px; padding: 12px; border: 1px dashed #cbd5e1; border-radius: 8px; text-align: center; }
-    .submit-btn { margin-top: 10px; background-color: #10b981; }
-    .disabled { opacity: 0.5; pointer-events: none; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 16px; background-color: #f1f5f9; color: #1e293b; }
+    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); max-width: 520px; margin: 0 auto; }
+    h2 { margin-top: 0; text-align: center; color: #0f172a; }
+    input[type="text"] { width: 100%; padding: 12px; font-size: 16px; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 12px; }
+    button { width: 100%; padding: 12px; font-size: 16px; border: none; border-radius: 8px; background-color: #2563eb; color: white; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    button:active { background-color: #1d4ed8; }
+    .status-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 10px 14px; background: #e2e8f0; border-radius: 8px; font-weight: bold; }
+    .q-badge { background: #3b82f6; color: white; padding: 3px 8px; border-radius: 6px; font-size: 0.85rem; }
+    .passage { line-height: 2.2; font-size: 1.35rem; letter-spacing: 2px; word-break: break-all; user-select: none; border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; background: #fafafa; }
+    .char { cursor: pointer; padding: 2px 4px; border-radius: 4px; transition: 0.15s; display: inline-block; }
+    .char:hover { background-color: #cbd5e1; }
+    .char.selected { background-color: #fed7aa; }
+    .char.submitted { background-color: #94a3b8 !important; color: white !important; cursor: default; }
+    .char.correct { background-color: #22c55e !important; color: white !important; cursor: default; }
+    .char.wrong { background-color: #ef4444 !important; color: white !important; cursor: default; }
+    .selection-box { margin-top: 16px; padding: 14px; border: 2px dashed #cbd5e1; border-radius: 8px; text-align: center; }
+    .submit-btn { margin-top: 10px; background-color: #059669; }
+    .submit-btn.disabled { opacity: 0.45; pointer-events: none; }
+    #msg-toast { min-height: 24px; font-weight: bold; margin-top: 6px; }
   </style>
 </head>
 <body>
 
 <div class="card" id="login-view">
-  <h2>🔍 抓錯字大作戰</h2>
-  <p style="color: #64748b; text-align: center;">請輸入姓名或座號進入作答</p>
-  <input type="text" id="student-name" placeholder="例如：01號 王小明">
+  <h2>🎯 找正字挑戰</h2>
+  <p style="color: #64748b; text-align: center; font-size: 0.95rem;">點擊正確字詞送出，大螢幕統一揭曉答案！</p>
+  <input type="text" id="student-name" placeholder="請輸入姓名或座號（例：05 王小明）">
   <button onclick="joinGame()">進入挑戰</button>
 </div>
 
 <div class="card" id="game-view" style="display: none;">
-  <div class="status-bar">
-    <span id="display-name"></span>
-    <span>得分：<span id="my-score" class="score-badge">0</span></span>
+  <div class="status-bar" id="status-bar">
+    <div>
+      <span id="display-name"></span>
+      <span class="q-badge" id="q-label">第 1 題</span>
+    </div>
+    <span>總分：<span id="my-score" style="color: #2563eb;">計算中</span></span>
   </div>
 
-  <p style="font-size: 0.9rem; color: #64748b; margin-top: 0;">點選文字選取錯字（可選取單字或詞彙）：</p>
-  <div class="passage" id="text-container">載入文章中...</div>
+  <div class="passage" id="text-container">載入題目中...</div>
 
-  <div class="selection-box">
-    <div>目前劃記字詞：<b id="current-word" style="color: #3b82f6; font-size: 1.2rem;">尚未選擇</b></div>
-    <button class="submit-btn disabled" id="submit-btn" onclick="submitSelection()">送出檢查</button>
+  <div class="selection-box" id="selection-box">
+    <div>目前劃記：<b id="current-word" style="color: #2563eb; font-size: 1.25rem;">尚未選擇</b></div>
+    <div id="msg-toast"></div>
+    <button class="submit-btn disabled" id="submit-btn" onclick="submitSelection()">確認送出</button>
   </div>
 </div>
 
 <script>
-  // 請在此填入您的 GAS Web App URL
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbw_37SRtaZ21xsiDWgNbdOBRtwSaHw8SJIO8JvT9_4OQA29OpsJKRvmK39DQNIis4py/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbxTMPKEbx9u0NxNWgKBXxxkrXRKnuDfIlu3Tdt-z0C9jhdHeL_d_qIFc-VkEkVcjeBB/exec"; // 請替換成你的 Apps Script 網址
 
   let studentName = "";
-  let currentScore = 0;
-  let selectedIndices = [];
+  let currentQIndex = 0;
   let articleText = "";
+  let selectedIndices = [];
+  let submittedRecords = [];
+  let pollingTimer = null;
+  let isCurrentQRevealed = false;
 
   async function joinGame() {
     studentName = document.getElementById("student-name").value.trim();
-    if (!studentName) return alert("請輸入您的姓名或座號！");
+    if (!studentName) return alert("請輸入姓名或座號！");
 
     document.getElementById("login-view").style.display = "none";
     document.getElementById("game-view").style.display = "block";
     document.getElementById("display-name").innerText = studentName;
 
-    // 載入文章
-    const res = await fetch(`${GAS_URL}?action=getGameData`);
-    const data = await res.json();
-    articleText = data.text;
-    renderText(articleText);
+    // 啟動輪詢同步
+    syncQuestion();
+    pollingTimer = setInterval(syncQuestion, 3000);
+  }
+
+  // 與伺服器同步目前題號與作答狀態
+  async function syncQuestion() {
+    try {
+      const res = await fetch(`${GAS_URL}?action=getCurrentQuestion`);
+      const data = await res.json();
+
+      // 檢查是否換題了
+      if (data.qIndex !== currentQIndex) {
+        currentQIndex = data.qIndex;
+        articleText = data.text;
+        isCurrentQRevealed = false;
+        submittedRecords = [];
+        selectedIndices = [];
+
+        document.getElementById("q-label").innerText = `第 ${currentQIndex} / ${data.totalQuestions} 題`;
+        document.getElementById("msg-toast").innerText = "";
+        resetSelectionBoxUI();
+        renderText(articleText);
+      }
+
+      // 如果尚未揭曉，檢查大螢幕是否已公布本題解答
+      if (!isCurrentQRevealed) {
+        const statusRes = await fetch(`${GAS_URL}?action=checkStudentStatus&name=${encodeURIComponent(studentName)}&qIndex=${currentQIndex}`);
+        const statusData = await statusRes.json();
+
+        if (statusData.isRevealed) {
+          isCurrentQRevealed = true;
+          revealResults(statusData);
+        }
+      }
+    } catch (err) {
+      console.error("同步失敗", err);
+    }
   }
 
   function renderText(text) {
@@ -86,25 +127,23 @@
   }
 
   function toggleSelect(idx, span) {
-    // 支援單字與多字連續劃選
+    if (isCurrentQRevealed || span.classList.contains("submitted") || span.classList.contains("correct") || span.classList.contains("wrong")) return;
+
     if (selectedIndices.includes(idx)) {
       selectedIndices = selectedIndices.filter(i => i !== idx);
-      span.style.backgroundColor = "";
+      span.classList.remove("selected");
     } else {
       selectedIndices.push(idx);
       selectedIndices.sort((a, b) => a - b);
-      span.style.backgroundColor = "#fed7aa"; // 劃記橘色
+      span.classList.add("selected");
     }
 
     const selectedWord = selectedIndices.map(i => articleText[i]).join("");
     document.getElementById("current-word").innerText = selectedWord || "尚未選擇";
-    
+
     const submitBtn = document.getElementById("submit-btn");
-    if (selectedWord.length > 0) {
-      submitBtn.classList.remove("disabled");
-    } else {
-      submitBtn.classList.add("disabled");
-    }
+    if (selectedWord.length > 0) submitBtn.classList.remove("disabled");
+    else submitBtn.classList.add("disabled");
   }
 
   async function submitSelection() {
@@ -112,39 +151,73 @@
     if (!word || word === "尚未選擇") return;
 
     const submitBtn = document.getElementById("submit-btn");
+    const toast = document.getElementById("msg-toast");
+
     submitBtn.classList.add("disabled");
-    submitBtn.innerText = "驗證中...";
+    submitBtn.innerText = "傳送中...";
+    toast.innerText = "";
 
     try {
       const response = await fetch(GAS_URL, {
         method: "POST",
-        body: JSON.stringify({
-          name: studentName,
-          word: word
-        })
+        body: JSON.stringify({ name: studentName, word: word })
       });
       const res = await response.json();
 
-      currentScore += res.point;
-      document.getElementById("my-score").innerText = currentScore;
+      if (!res.success) {
+        toast.style.color = "#dc2626";
+        toast.innerText = res.error || "傳送失敗";
+        return;
+      }
 
-      // 標註目前選定區域的顏色
-      selectedIndices.forEach(idx => {
+      const currentIndices = [...selectedIndices];
+      submittedRecords.push({ word: word, indices: currentIndices });
+
+      currentIndices.forEach(idx => {
         const el = document.querySelector(`.char[data-index='${idx}']`);
         if (el) {
-          el.className = `char ${res.isCorrect ? 'correct' : 'wrong'}`;
-          el.onclick = null; // 已作答區域防止重複點擊
+          el.className = "char submitted";
+          el.onclick = null;
         }
       });
 
-      alert(res.isCorrect ? `🎉 答對了！加 ${res.point} 分` : `❌ 找錯了！扣 ${Math.abs(res.point)} 分`);
+      toast.style.color = "#0284c7";
+      toast.innerText = "✓ 答案已成功記錄！";
     } catch (e) {
-      alert("連線發生錯誤，請稍後再試！");
+      toast.style.color = "#dc2626";
+      toast.innerText = "連線失敗，請再試一次！";
     } finally {
       selectedIndices = [];
       document.getElementById("current-word").innerText = "尚未選擇";
-      submitBtn.innerText = "送出檢查";
+      submitBtn.innerText = "確認送出";
     }
+  }
+
+  function revealResults(statusData) {
+    document.getElementById("my-score").innerText = `${statusData.totalScore} 分`;
+    document.getElementById("selection-box").innerHTML = `
+      <div style="font-size: 1.1rem; font-weight: bold; color: #1e293b;">📢 本題已公布答案！</div>
+      <p style="color: #64748b; margin: 4px 0 0;">綠色為正字加分，紅色為錯字扣分。等待老師切換下一題...</p>
+    `;
+
+    // 翻牌顯示紅綠樣式
+    statusData.answers.forEach(item => {
+      const rec = submittedRecords.find(r => r.word === item.word);
+      if (rec) {
+        rec.indices.forEach(idx => {
+          const el = document.querySelector(`.char[data-index='${idx}']`);
+          if (el) el.className = `char ${item.isCorrect ? 'correct' : 'wrong'}`;
+        });
+      }
+    });
+  }
+
+  function resetSelectionBoxUI() {
+    document.getElementById("selection-box").innerHTML = `
+      <div>目前劃記：<b id="current-word" style="color: #2563eb; font-size: 1.25rem;">尚未選擇</b></div>
+      <div id="msg-toast"></div>
+      <button class="submit-btn disabled" id="submit-btn" onclick="submitSelection()">確認送出</button>
+    `;
   }
 </script>
 </body>
