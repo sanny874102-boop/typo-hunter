@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>文字挑戰 - 大螢幕主控台</title>
+  <title>抓錯字大作戰 - 大螢幕主控台</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <style>
@@ -32,7 +32,6 @@
     .badge-locked { background: #64748b; color: #f8fafc; }
     .badge-unlocked { background: #10b981; color: #ffffff; }
 
-    /* 玩家列表標籤樣式 */
     .players-box { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; max-height: 140px; overflow-y: auto; padding: 10px; background: #0b1120; border-radius: 8px; border: 1px solid #334155; }
     .player-tag { background: #334155; color: #38bdf8; padding: 4px 10px; border-radius: 20px; font-size: 0.9rem; font-weight: bold; animation: popIn 0.3s ease-out; }
     @keyframes popIn {
@@ -45,7 +44,7 @@
 
 <div class="header">
   <div>
-    <h1 style="margin: 0; display: inline-block;">🎮 文字挑戰 - 大螢幕主控台</h1>
+    <h1 style="margin: 0; display: inline-block;">🎮 抓錯字大挑戰 - 大螢幕主控台</h1>
     <span id="admin-badge" class="badge-status badge-locked">看板模式</span>
     
     <div class="q-control">
@@ -75,7 +74,6 @@
     <div id="qrcode"></div>
     <p id="student-url" style="color: #94a3b8; font-size: 0.85rem; word-break: break-all;"></p>
 
-    <!-- 已登入玩家名單展示區 -->
     <h3>👥 已連線玩家 (<span id="player-count" style="color: #38bdf8;">0</span> 人)</h3>
     <div class="players-box" id="players-list">
       <span style="color: #64748b; font-size: 0.9rem;">等待學生掃碼加入...</span>
@@ -94,7 +92,7 @@
 </div>
 
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbyooXE-Bs9a2Y-8p199al-iiioJfwcOoZdS-y--rGDDqeoDWkC2d1YNxeIVoK9Z0y8/exec"; // 請確認已填入正確的 GAS URL
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbw8dSyz8qwD1wPCy4srj65dNqw0yA5CVrrj2om76AvtMwTDElutTjslfdGTkd-jmOjL/exec"; // 請填入您的 Web App 網址
   const ADMIN_PASS = "4321";
   let isAdmin = false;
   let hostData = null;
@@ -148,7 +146,7 @@
     });
 
     loadData();
-    setInterval(loadData, 3000); // 每 3 秒更新一次玩家與排行榜
+    setInterval(loadData, 3000);
   };
 
   async function loadData() {
@@ -157,7 +155,6 @@
       const data = await res.json();
       hostData = data;
 
-      // 渲染已連線玩家
       renderPlayers(data.players || []);
 
       if (data.currentQ === 0) {
@@ -251,15 +248,15 @@
     const exportData = Object.entries(hostData.stats).map(([name, stat], idx) => ({
       "排名": idx + 1,
       "姓名/座號": name,
-      "累計選對字數": stat.correctCount,
-      "累計踩錯字數": stat.wrongCount,
+      "累計抓對錯字數": stat.correctCount,
+      "累計誤抓字數": stat.wrongCount,
       "總積分": stat.score
     })).sort((a, b) => b["總積分"] - a["總積分"]);
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "挑戰總成績");
-    XLSX.writeFile(workbook, `逐字挑戰累計成績單_${new Date().toISOString().slice(0,10)}.xlsx`);
+    XLSX.writeFile(workbook, `抓錯字挑戰累計成績單_${new Date().toISOString().slice(0,10)}.xlsx`);
   }
 
   async function resetRound() {
