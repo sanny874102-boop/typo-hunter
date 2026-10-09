@@ -2,18 +2,72 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>掠漏大車拚 - 大螢幕主控台</title>
+  <title>抓錯字大作戰 - 大螢幕主控台</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 24px; background: #0f172a; color: #f8fafc; }
     .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #334155; padding-bottom: 16px; margin-bottom: 24px; }
     .q-control { display: flex; align-items: center; gap: 10px; background: #1e293b; padding: 6px 14px; border-radius: 8px; margin-top: 6px; }
-    .container { display: grid; grid-template-columns: 2fr 1.2fr; gap: 24px; }
+    
+    /* 調整左右欄寬度：給右側 QR Code 與玩家清單更寬的版面 (1.6fr : 1.4fr) */
+    .container { display: grid; grid-template-columns: 1.6fr 1.4fr; gap: 24px; }
     .panel { background: #1e293b; border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
-    .passage { font-size: 1.8rem; line-height: 2.2; letter-spacing: 3px; background: #0b1120; padding: 24px; border-radius: 8px; border: 1px solid #334155; min-height: 180px; }
-    .highlight-typo { background-color: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
-    .correction-badge { background-color: #22c55e; color: white; font-size: 1.05rem; vertical-align: super; padding: 2px 6px; border-radius: 4px; margin-left: 2px; }
+    
+    .passage { 
+      font-size: 2rem; 
+      line-height: 2.3; 
+      letter-spacing: 3px; 
+      background: #0b1120; 
+      padding: 24px; 
+      border-radius: 8px; 
+      border: 1px solid #334155; 
+      min-height: 200px; 
+      white-space: pre-wrap; 
+      word-break: break-all;
+    }
+    
+    /* 錯字卡片與蓋牌樣式 */
+    .highlight-typo { 
+      background-color: #ef4444; 
+      color: white; 
+      padding: 4px 8px; 
+      border-radius: 6px; 
+      font-weight: bold; 
+      display: inline-block;
+      margin: 0 2px;
+    }
+    .correction-badge { 
+      background-color: #22c55e; 
+      color: white; 
+      font-size: 1.2rem; 
+      padding: 3px 8px; 
+      border-radius: 6px; 
+      margin-left: 4px; 
+      display: inline-block;
+      vertical-align: middle;
+    }
+    /* 未揭示的蓋牌卡片 */
+    .mystery-card {
+      background-color: #f59e0b;
+      color: #0f172a;
+      font-size: 1.1rem;
+      font-weight: bold;
+      padding: 3px 10px;
+      border-radius: 6px;
+      margin-left: 4px;
+      cursor: pointer;
+      display: inline-block;
+      vertical-align: middle;
+      border: 2px dashed #b45309;
+      user-select: none;
+      transition: 0.2s;
+    }
+    .mystery-card:hover {
+      background-color: #fbbf24;
+      transform: scale(1.05);
+    }
+
     .btn { padding: 9px 16px; font-size: 0.95rem; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
     .btn-green { background: #22c55e; color: white; }
     .btn-blue { background: #3b82f6; color: white; }
@@ -22,21 +76,52 @@
     .btn-purple { background: #8b5cf6; color: white; }
     .btn-gray { background: #475569; color: white; }
     .btn:hover { opacity: 0.9; }
-    table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.95rem; }
-    th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #334155; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 1rem; }
+    th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #334155; }
     th { color: #94a3b8; }
-    #qrcode { display: flex; justify-content: center; margin: 12px 0; background: white; padding: 12px; border-radius: 8px; width: fit-content; }
+    
+    /* 放大 QR Code 容器 */
+    #qrcode { 
+      display: flex; 
+      justify-content: center; 
+      margin: 16px auto; 
+      background: white; 
+      padding: 18px; 
+      border-radius: 12px; 
+      width: fit-content; 
+    }
     
     .admin-locked { display: none !important; }
     .badge-status { font-size: 0.85rem; padding: 4px 8px; border-radius: 4px; vertical-align: middle; margin-left: 8px; }
     .badge-locked { background: #64748b; color: #f8fafc; }
     .badge-unlocked { background: #10b981; color: #ffffff; }
 
-    .players-box { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; max-height: 100px; overflow-y: auto; padding: 10px; background: #0b1120; border-radius: 8px; border: 1px solid #334155; }
-    .player-tag { background: #334155; color: #38bdf8; padding: 3px 8px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; }
+    /* 放大參加人員區域與字體 */
+    .players-box { 
+      display: flex; 
+      flex-wrap: wrap; 
+      gap: 10px; 
+      margin-top: 12px; 
+      min-height: 120px;
+      max-height: 180px; 
+      overflow-y: auto; 
+      padding: 14px; 
+      background: #0b1120; 
+      border-radius: 8px; 
+      border: 1px solid #334155; 
+    }
+    .player-tag { 
+      background: #334155; 
+      color: #38bdf8; 
+      padding: 6px 14px; 
+      border-radius: 20px; 
+      font-size: 1.1rem; 
+      font-weight: bold; 
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
     
-    .tab-bar { display: flex; gap: 8px; margin-top: 16px; border-bottom: 1px solid #334155; padding-bottom: 8px; }
-    .tab-btn { background: none; border: none; color: #94a3b8; font-size: 1rem; font-weight: bold; cursor: pointer; padding: 4px 10px; border-radius: 6px; }
+    .tab-bar { display: flex; gap: 8px; margin-top: 20px; border-bottom: 1px solid #334155; padding-bottom: 8px; }
+    .tab-btn { background: none; border: none; color: #94a3b8; font-size: 1.05rem; font-weight: bold; cursor: pointer; padding: 6px 14px; border-radius: 6px; }
     .tab-btn.active { background: #38bdf8; color: #0f172a; }
 
     /* 密碼遮罩輸入彈窗樣式 */
@@ -62,7 +147,7 @@
 
 <div class="header">
   <div>
-    <h1 style="margin: 0; display: inline-block;">🎮 掠漏大車拚  - 大螢幕主控台</h1>
+    <h1 style="margin: 0; display: inline-block;">🎮 抓錯字大挑戰 - 大螢幕主控台</h1>
     <span id="admin-badge" class="badge-status badge-locked">看板模式</span>
     
     <div class="q-control">
@@ -83,18 +168,19 @@
 
 <div class="container">
   <div class="panel">
-    <h2>📄 文章內容</h2>
+    <h2>📄 文章內容 <span id="reveal-hint" style="font-size: 0.95rem; font-weight: normal; color: #f59e0b; display: none;">（點擊蓋牌處可手動揭曉解答）</span></h2>
     <div id="passage-box" class="passage">🎮 遊戲準備中，等待老師開始...</div>
   </div>
 
   <div class="panel">
     <h2>📱 掃描加入遊戲</h2>
     <div id="qrcode"></div>
-    <p id="student-url" style="color: #94a3b8; font-size: 0.85rem; word-break: break-all;"></p>
+    <p id="student-url" style="color: #94a3b8; font-size: 0.95rem; text-align: center; word-break: break-all;"></p>
 
+    <!-- 放大後的玩家區域 -->
     <h3>👥 已連線玩家 (<span id="player-count" style="color: #38bdf8;">0</span> 人)</h3>
     <div class="players-box" id="players-list">
-      <span style="color: #64748b; font-size: 0.9rem;">等待學生掃碼加入...</span>
+      <span style="color: #64748b; font-size: 1rem;">等待學生掃碼加入...</span>
     </div>
 
     <div class="tab-bar">
@@ -135,12 +221,16 @@
 </div>
 
 <script>
-  // 請確認已替換為您當前的正確 Apps Script 部署網址
+  // 請確認已填入正確的 Apps Script 部署 URL
   const GAS_URL = "https://script.google.com/macros/s/AKfycbwr1wwx0OEYB3nU2f1QnNvAG7QOYoCbgDzjidCPo_qa2NUdGPzFiqDxAzgfrNU_fSYL/exec";
   const ADMIN_PASS = "4321";
   let isAdmin = false;
   let hostData = null;
   let currentTab = "current";
+  
+  // 紀錄手動翻牌狀態：存放已翻牌的錯字索引
+  let manualRevealedSet = new Set();
+  let lastRevealedQ = -1;
 
   function toggleAdminMode() {
     if (isAdmin) {
@@ -217,10 +307,12 @@
   window.onload = function() {
     const playerUrl = window.location.href.replace(/host\.html.*$/, 'index.html');
     document.getElementById("student-url").innerText = playerUrl;
+    
+    // 將 QR Code 由 130 放大為 220
     new QRCode(document.getElementById("qrcode"), {
       text: playerUrl,
-      width: 130,
-      height: 130
+      width: 220,
+      height: 220
     });
 
     loadData();
@@ -238,14 +330,23 @@
       if (data.currentQ === 0) {
         document.getElementById("current-q-text").innerText = "準備中";
         document.getElementById("passage-box").innerText = "🎮 遊戲準備中，等待老師開始第 1 題！";
+        document.getElementById("reveal-hint").style.display = "none";
         document.getElementById("start-game-btn").style.display = isAdmin ? "inline-block" : "none";
       } else {
         document.getElementById("current-q-text").innerText = `第 ${data.currentQ} / ${data.totalQuestions} 題`;
         document.getElementById("start-game-btn").style.display = "none";
 
         if (data.isRevealed) {
+          // 若題目切換，重置翻牌紀錄
+          if (lastRevealedQ !== data.currentQ) {
+            manualRevealedSet.clear();
+            lastRevealedQ = data.currentQ;
+          }
+          document.getElementById("reveal-hint").style.display = "inline";
           renderRevealedPassage(data);
         } else {
+          document.getElementById("reveal-hint").style.display = "none";
+          manualRevealedSet.clear();
           document.getElementById("passage-box").innerText = data.text;
         }
       }
@@ -261,7 +362,7 @@
     document.getElementById("player-count").innerText = players.length;
     const box = document.getElementById("players-list");
     if (players.length === 0) {
-      box.innerHTML = `<span style="color: #64748b; font-size: 0.9rem;">等待學生掃碼加入...</span>`;
+      box.innerHTML = `<span style="color: #64748b; font-size: 1rem;">等待學生掃碼加入...</span>`;
       return;
     }
     box.innerHTML = players.map(name => `<span class="player-tag">👤 ${name}</span>`).join("");
@@ -324,14 +425,26 @@
       return alert("已經沒有更多題目了！");
     }
 
+    manualRevealedSet.clear();
     await fetch(`${GAS_URL}?action=switchQuestion&qIndex=${nextQ}&t=${Date.now()}`);
     loadData();
   }
 
   async function revealAnswers() {
     if (!hostData || hostData.currentQ === 0) return alert("挑戰尚未開始！");
+    manualRevealedSet.clear();
     await fetch(`${GAS_URL}?action=setReveal&t=${Date.now()}`);
     loadData();
+  }
+
+  // 蓋牌與手動翻牌邏輯
+  function flipCard(idx) {
+    if (manualRevealedSet.has(idx)) {
+      manualRevealedSet.delete(idx); // 再次點擊可重新蓋牌
+    } else {
+      manualRevealedSet.add(idx); // 翻牌揭曉解答
+    }
+    renderRevealedPassage(hostData);
   }
 
   function renderRevealedPassage(data) {
@@ -339,7 +452,17 @@
     data.typos.forEach((typo, i) => {
       const correct = data.corrections[i] || "";
       const regex = new RegExp(typo, "g");
-      html = html.replace(regex, `<span class="highlight-typo">${typo}</span><span class="correction-badge">應為: ${correct}</span>`);
+      
+      let badgeHtml = "";
+      if (manualRevealedSet.has(i)) {
+        // 已翻牌狀態
+        badgeHtml = `<span class="correction-badge" onclick="flipCard(${i})" title="點擊重新蓋牌">應為: ${correct}</span>`;
+      } else {
+        // 尚未翻牌：顯示蓋牌按鈕
+        badgeHtml = `<span class="mystery-card" onclick="flipCard(${i})" title="點擊揭露正確答案">❓ 點擊翻牌</span>`;
+      }
+
+      html = html.replace(regex, `<span class="highlight-typo">${typo}</span>${badgeHtml}`);
     });
     document.getElementById("passage-box").innerHTML = html;
   }
@@ -366,6 +489,7 @@
 
   async function resetRound() {
     if (!confirm("確定要清空所有紀錄並回到未開始狀態嗎？")) return;
+    manualRevealedSet.clear();
     await fetch(`${GAS_URL}?action=resetScores&t=${Date.now()}`);
     loadData();
     alert("已重設遊戲為準備階段！");
