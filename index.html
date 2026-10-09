@@ -32,7 +32,7 @@
 
 <div class="card" id="login-view">
   <h2>🔍 抓錯字挑戰</h2>
-  <p style="color: #64748b; text-align: center; font-size: 0.95rem;">抓出錯字加分，誤抓扣分；漏抓錯字結算時也會扣分喔！</p>
+  <p style="color: #64748b; text-align: center; font-size: 0.95rem;">抓出錯字加分，誤抓扣分；漏抓錯字結算時也會扣分！</p>
   <input type="text" id="student-name" placeholder="請輸入姓名或座號（例：05 王小明）">
   <button id="join-btn" onclick="joinGame()">進入挑戰</button>
 </div>
@@ -56,7 +56,8 @@
 </div>
 
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbzkepQmz0ZMwzltM4zLdOM6VvpFXzIaz0W_p-Nrv6dIPSyo1XQ3mGCQbWFhIu3BqqWZ/exec"; // 請確認已替換為正確的 GAS URL
+  // 請確認已替換為您當前的正確 Apps Script 部署網址
+  const GAS_URL = "https://script.google.com/macros/s/AKfycby1DnrmUpVq-DSQZwltqQay6oVm_ZVRNTrvR7h2r6yuvSGK6EYs3YiPQ13Iu9gL57E5/exec";
 
   let studentName = "";
   let currentQIndex = -1;
@@ -245,7 +246,7 @@
     box.innerHTML = `
       <div>目前劃記：<b id="current-word" style="color: #2563eb; font-size: 1.25rem;">尚未選擇</b></div>
       <div id="msg-toast"></div>
-      <button class="submit-btn disabled" id="submit-btn" onclick="submitSelection()">確認送出</button>
+      <button class="submit-btn disabled" id="submit-btn">確認送出</button>
     `;
     document.getElementById("submit-btn").onclick = submitSelection;
   }
