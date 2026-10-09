@@ -35,10 +35,27 @@
     .players-box { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; max-height: 100px; overflow-y: auto; padding: 10px; background: #0b1120; border-radius: 8px; border: 1px solid #334155; }
     .player-tag { background: #334155; color: #38bdf8; padding: 3px 8px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; }
     
-    /* 榜單切換分頁標籤 */
     .tab-bar { display: flex; gap: 8px; margin-top: 16px; border-bottom: 1px solid #334155; padding-bottom: 8px; }
     .tab-btn { background: none; border: none; color: #94a3b8; font-size: 1rem; font-weight: bold; cursor: pointer; padding: 4px 10px; border-radius: 6px; }
     .tab-btn.active { background: #38bdf8; color: #0f172a; }
+
+    /* 密碼遮罩輸入彈窗樣式 */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.75); display: none;
+      justify-content: center; align-items: center; z-index: 9999;
+    }
+    .modal-box {
+      background: #1e293b; border: 1px solid #334155; border-radius: 12px;
+      padding: 24px; width: 300px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+    .modal-box input[type="password"] {
+      width: 100%; padding: 10px; font-size: 1.1rem; border-radius: 6px;
+      border: 1px solid #475569; background: #0f172a; color: #f8fafc;
+      box-sizing: border-box; margin-bottom: 16px; text-align: center; letter-spacing: 4px;
+    }
+    .modal-actions { display: flex; justify-content: space-between; gap: 10px; }
+    .modal-actions button { flex: 1; }
   </style>
 </head>
 <body>
@@ -80,13 +97,11 @@
       <span style="color: #64748b; font-size: 0.9rem;">等待學生掃碼加入...</span>
     </div>
 
-    <!-- 榜單標籤切換 -->
     <div class="tab-bar">
       <button id="tab-curr" class="tab-btn active" onclick="switchTab('current')">🎯 本題作答詳情</button>
       <button id="tab-total" class="tab-btn" onclick="switchTab('total')">🏆 全場累積排行榜</button>
     </div>
 
-    <!-- 本題作答詳情表格 -->
     <table id="table-curr">
       <thead>
         <tr><th>姓名</th><th>抓對</th><th>誤抓</th><th>漏抓</th><th>本題得分</th></tr>
@@ -96,7 +111,6 @@
       </tbody>
     </table>
 
-    <!-- 全場總榜表格 -->
     <table id="table-total" style="display: none;">
       <thead>
         <tr><th>排名</th><th>姓名</th><th>抓對/誤抓/漏抓</th><th>累計總分</th></tr>
@@ -108,8 +122,21 @@
   </div>
 </div>
 
+<!-- 密碼輸入對話框（遮罩保護） -->
+<div class="modal-overlay" id="pwd-modal">
+  <div class="modal-box">
+    <h3 style="margin-top:0; color:#f8fafc;">輸入密碼</h3>
+    <input type="password" id="admin-pwd-input" placeholder="••••" autocomplete="off" onkeydown="if(event.key==='Enter') submitPassword()">
+    <div class="modal-actions">
+      <button class="btn btn-gray" onclick="closePasswordModal()">取消</button>
+      <button class="btn btn-blue" onclick="submitPassword()">確定</button>
+    </div>
+  </div>
+</div>
+
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbzkepQmz0ZMwzltM4zLdOM6VvpFXzIaz0W_p-Nrv6dIPSyo1XQ3mGCQbWFhIu3BqqWZ/exec"; // 請確認已替換為正確的 GAS URL
+  // 請確認已替換為您當前的正確 Apps Script 部署網址
+  const GAS_URL = "https://script.google.com/macros/s/AKfycby1DnrmUpVq-DSQZwltqQay6oVm_ZVRNTrvR7h2r6yuvSGK6EYs3YiPQ13Iu9gL57E5/exec";
   const ADMIN_PASS = "4321";
   let isAdmin = false;
   let hostData = null;
@@ -121,13 +148,31 @@
       applyAdminUI();
       return;
     }
+    openPasswordModal();
+  }
 
-    const input = prompt("請輸入密碼：");
+  function openPasswordModal() {
+    const modal = document.getElementById("pwd-modal");
+    const input = document.getElementById("admin-pwd-input");
+    input.value = "";
+    modal.style.display = "flex";
+    input.focus();
+  }
+
+  function closePasswordModal() {
+    document.getElementById("pwd-modal").style.display = "none";
+  }
+
+  function submitPassword() {
+    const input = document.getElementById("admin-pwd-input").value;
     if (input === ADMIN_PASS) {
       isAdmin = true;
+      closePasswordModal();
       applyAdminUI();
-    } else if (input !== null) {
+    } else {
       alert("密碼錯誤！");
+      document.getElementById("admin-pwd-input").value = "";
+      document.getElementById("admin-pwd-input").focus();
     }
   }
 
@@ -222,7 +267,6 @@
     box.innerHTML = players.map(name => `<span class="player-tag">👤 ${name}</span>`).join("");
   }
 
-  // 渲染當前題作答詳情
   function renderCurrentQBoard(currStats) {
     const tbody = document.getElementById("current-q-body");
     const list = Object.entries(currStats).map(([name, s]) => ({ name, ...s }))
@@ -244,7 +288,6 @@
     `).join("");
   }
 
-  // 渲染全場累積榜
   function renderTotalBoard(totalStats) {
     const tbody = document.getElementById("total-body");
     const list = Object.entries(totalStats).map(([name, s]) => ({ name, ...s }))
