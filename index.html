@@ -101,7 +101,7 @@
 
 <div class="card" id="login-view">
   <h2>🔍 抓錯字挑戰</h2>
-  <p style="color: #64748b; text-align: center; font-size: 0.95rem;">找出文章中的錯別字，大螢幕統一揭曉答案！</p>
+  <p style="color: #64748b; text-align: center; font-size: 0.95rem;">每抓對一個錯字加分，選到正常字扣分！</p>
   <input type="text" id="student-name" placeholder="請輸入姓名或座號（例：05 王小明）">
   <button id="join-btn" onclick="joinGame()">進入挑戰</button>
 </div>
@@ -125,7 +125,8 @@
 </div>
 
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbw8dSyz8qwD1wPCy4srj65dNqw0yA5CVrrj2om76AvtMwTDElutTjslfdGTkd-jmOjL/exec"; // 請填入您的 Web App 網址
+  // 請確認已替換為正確的 Apps Script URL
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbwySWLMtpZtCRWAAfCaF4ubhWdU9NBqsRDeykBZN2Q_-AfYK03tMWeYaAnV6Mw7-45h/exec";
 
   let studentName = "";
   let currentQIndex = -1;
@@ -286,7 +287,7 @@
     document.getElementById("my-score").innerText = `${statusData.totalScore} 分`;
     document.getElementById("selection-box").innerHTML = `
       <div style="font-size: 1.1rem; font-weight: bold; color: #1e293b;">📢 本題已公布答案！</div>
-      <p style="color: #64748b; margin: 4px 0 0;">綠色為抓對錯字加分，紅色為誤抓一般字扣分。</p>
+      <p style="color: #64748b; margin: 4px 0 0;">綠色為抓對錯字加分，紅色為誤抓正常字扣分。</p>
     `;
 
     submittedIndicesMap.forEach(item => {
