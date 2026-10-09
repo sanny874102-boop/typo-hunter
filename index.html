@@ -9,32 +9,31 @@
     body { 
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
       margin: 0; 
-      padding: 20px 16px; 
+      padding: 16px 12px; 
       background-color: #0f172a; 
       color: #1e293b; 
     }
-    /* 卡片寬度放寬至 860px，兼顧手機、平板與電腦螢幕 */
     .card { 
       background: white; 
-      padding: 24px; 
+      padding: 20px 16px; 
       border-radius: 14px; 
       box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
-      max-width: 860px; 
+      max-width: 600px; 
       margin: 0 auto; 
     }
-    h2 { margin-top: 0; text-align: center; color: #0f172a; font-size: 1.8rem; }
+    h2 { margin-top: 0; text-align: center; color: #0f172a; font-size: 1.6rem; }
     input[type="text"] { 
       width: 100%; 
-      padding: 14px; 
-      font-size: 17px; 
+      padding: 12px; 
+      font-size: 16px; 
       border: 1px solid #cbd5e1; 
       border-radius: 8px; 
-      margin-bottom: 14px; 
+      margin-bottom: 12px; 
     }
     button { 
       width: 100%; 
-      padding: 13px; 
-      font-size: 17px; 
+      padding: 12px; 
+      font-size: 16px; 
       border: none; 
       border-radius: 8px; 
       background-color: #2563eb; 
@@ -48,58 +47,69 @@
       display: flex; 
       justify-content: space-between; 
       align-items: center; 
-      margin-bottom: 16px; 
-      padding: 12px 18px; 
+      margin-bottom: 14px; 
+      padding: 10px 14px; 
       background: #e2e8f0; 
-      border-radius: 10px; 
+      border-radius: 8px; 
       font-weight: bold; 
-      font-size: 1.15rem;
+      font-size: 1.05rem;
     }
     .q-badge { 
       background: #3b82f6; 
       color: white; 
-      padding: 4px 10px; 
+      padding: 3px 8px; 
       border-radius: 6px; 
-      font-size: 0.95rem; 
-      margin-left: 8px; 
+      font-size: 0.85rem; 
+      margin-left: 6px; 
     }
-    /* 文章排版保持與大螢幕相同：保留換行與空格 */
+    
+    /* 文章容器：使用彈性分行佈局，保證每行獨立 */
     .passage { 
-      line-height: 2.3; 
-      font-size: 1.8rem; 
-      letter-spacing: 3px; 
-      word-break: break-all; 
-      user-select: none; 
       border: 1px solid #e2e8f0; 
-      padding: 20px; 
+      padding: 18px 14px; 
       border-radius: 10px; 
       background: #f8fafc; 
-      min-height: 160px; 
-      white-space: pre-wrap; 
+      min-height: 180px; 
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
+    
+    .passage-line {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      min-height: 38px;
+      line-height: 1.8;
+      font-size: 1.55rem;
+      letter-spacing: 2px;
+    }
+
     .char { 
       cursor: pointer; 
-      padding: 2px 5px; 
+      padding: 2px 4px; 
       border-radius: 6px; 
       transition: 0.15s; 
       display: inline-block; 
-      margin: 1px 0;
+      user-select: none;
+      margin: 1px;
     }
     .char:hover { background-color: #cbd5e1; }
     .char.selected { background-color: #fed7aa; }
     .char.submitted { background-color: #64748b !important; color: white !important; cursor: default; }
     .char.correct { background-color: #22c55e !important; color: white !important; cursor: default; font-weight: bold; }
     .char.wrong { background-color: #ef4444 !important; color: white !important; cursor: default; font-weight: bold; }
+    
     .selection-box { 
-      margin-top: 18px; 
-      padding: 16px; 
+      margin-top: 16px; 
+      padding: 14px; 
       border: 2px dashed #cbd5e1; 
       border-radius: 10px; 
       text-align: center; 
     }
-    .submit-btn { margin-top: 12px; background-color: #059669; font-size: 1.15rem; }
+    .submit-btn { margin-top: 10px; background-color: #059669; font-size: 1.1rem; }
     .submit-btn.disabled { opacity: 0.45; pointer-events: none; }
-    #msg-toast { min-height: 26px; font-weight: bold; margin-top: 8px; font-size: 1rem; }
+    #msg-toast { min-height: 24px; font-weight: bold; margin-top: 6px; font-size: 0.95rem; }
     .missed-tag { display: inline-block; background: #fef2f2; border: 1px solid #f87171; color: #dc2626; padding: 2px 8px; border-radius: 6px; margin: 4px 2px; font-weight: bold; }
   </style>
 </head>
@@ -107,7 +117,7 @@
 
 <div class="card" id="login-view">
   <h2>🔍 掠漏大車拚</h2>
-  <p style="color: #64748b; text-align: center; font-size: 1rem;">抓出錯字加分，誤抓扣分；漏抓錯字結算時也會扣分！</p>
+  <p style="color: #64748b; text-align: center; font-size: 0.95rem;">抓出錯字加分，誤抓扣分；漏抓錯字結算時也會扣分！</p>
   <input type="text" id="student-name" placeholder="請輸入姓名或座號（例：05 王小明）">
   <button id="join-btn" onclick="joinGame()">進入挑戰</button>
 </div>
@@ -124,7 +134,7 @@
   <div class="passage" id="text-container">等待挑戰開始...</div>
 
   <div class="selection-box" id="selection-box">
-    <div>目前劃記：<b id="current-word" style="color: #2563eb; font-size: 1.35rem;">尚未選擇</b></div>
+    <div>目前劃記：<b id="current-word" style="color: #2563eb; font-size: 1.25rem;">尚未選擇</b></div>
     <div id="msg-toast"></div>
     <button class="submit-btn disabled" id="submit-btn" onclick="submitSelection()">確認送出</button>
   </div>
@@ -183,7 +193,7 @@
           document.getElementById("my-score").innerText = "-- 分";
           document.getElementById("text-container").innerText = "🎮 挑戰尚未開始，請稍候老師發送題目！";
           document.getElementById("selection-box").innerHTML = `
-            <div style="color: #64748b; font-weight: bold; font-size: 1.1rem;">連線成功，等待老師開始第 1 題...</div>
+            <div style="color: #64748b; font-weight: bold; font-size: 1rem;">連線成功，等待老師開始第 1 題...</div>
           `;
           return;
         }
@@ -208,29 +218,43 @@
     }
   }
 
-  // 保留換行符號與空白渲染
+  // 逐行封裝渲染：保證換行、空行與每一行段落完全對齊大螢幕
   function renderText(text) {
     const container = document.getElementById("text-container");
     container.innerHTML = "";
     
-    text.split("").forEach((char, index) => {
-      if (char === "\n") {
-        container.appendChild(document.createElement("br"));
+    const lines = text.split("\n");
+    let globalIndex = 0;
+
+    lines.forEach(line => {
+      const lineDiv = document.createElement("div");
+      lineDiv.className = "passage-line";
+
+      if (line.trim().length === 0) {
+        // 空行，保留上下間距
+        lineDiv.style.minHeight = "24px";
       } else {
-        const span = document.createElement("span");
-        span.className = "char";
-        span.innerText = char;
-        span.dataset.index = index;
-        
-        // 若純為空格，不綁定點擊事件
-        if (char === " " || char === " ") {
-          span.style.cursor = "default";
-          span.style.padding = "0 3px";
-        } else {
-          span.onclick = () => toggleSelect(index, span);
-        }
-        container.appendChild(span);
+        line.split("").forEach(char => {
+          const currentIndex = globalIndex;
+          if (char === " " || char === " ") {
+            const spaceSpan = document.createElement("span");
+            spaceSpan.innerHTML = "&nbsp;";
+            spaceSpan.style.display = "inline-block";
+            spaceSpan.style.width = "8px";
+            lineDiv.appendChild(spaceSpan);
+          } else {
+            const span = document.createElement("span");
+            span.className = "char";
+            span.innerText = char;
+            span.dataset.index = currentIndex;
+            span.onclick = () => toggleSelect(currentIndex, span);
+            lineDiv.appendChild(span);
+          }
+          globalIndex++;
+        });
       }
+      globalIndex++; // 計入換行符號位移
+      container.appendChild(lineDiv);
     });
   }
 
@@ -246,7 +270,7 @@
       span.classList.add("selected");
     }
 
-    const selectedWord = selectedIndices.map(i => articleText[i]).join("");
+    const selectedWord = selectedIndices.map(i => articleText[i]).filter(Boolean).join("");
     document.getElementById("current-word").innerText = selectedWord || "尚未選擇";
 
     const submitBtn = document.getElementById("submit-btn");
@@ -309,15 +333,15 @@
     let missedHtml = "";
     if (statusData.missedTypos && statusData.missedTypos.length > 0) {
       missedHtml = `
-        <div style="margin-top: 10px; font-size: 1rem; color: #dc2626;">
+        <div style="margin-top: 10px; font-size: 0.95rem; color: #dc2626;">
           ⚠️ 漏抓錯字：${statusData.missedTypos.map(c => `<span class="missed-tag">${c}</span>`).join(" ")} (扣分)
         </div>
       `;
     }
 
     document.getElementById("selection-box").innerHTML = `
-      <div style="font-size: 1.2rem; font-weight: bold; color: #1e293b;">📢 本題已公布答案！</div>
-      <p style="color: #64748b; margin: 6px 0 0; font-size: 1rem;">綠色為抓對錯字，紅色為誤抓正常字。</p>
+      <div style="font-size: 1.15rem; font-weight: bold; color: #1e293b;">📢 本題已公布答案！</div>
+      <p style="color: #64748b; margin: 4px 0 0; font-size: 0.95rem;">綠色為抓對錯字，紅色為誤抓正常字。</p>
       ${missedHtml}
     `;
 
@@ -333,7 +357,7 @@
   function resetSelectionBoxUI() {
     const box = document.getElementById("selection-box");
     box.innerHTML = `
-      <div>目前劃記：<b id="current-word" style="color: #2563eb; font-size: 1.35rem;">尚未選擇</b></div>
+      <div>目前劃記：<b id="current-word" style="color: #2563eb; font-size: 1.25rem;">尚未選擇</b></div>
       <div id="msg-toast"></div>
       <button class="submit-btn disabled" id="submit-btn">確認送出</button>
     `;
