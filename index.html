@@ -14,7 +14,7 @@
     button:active { background-color: #1d4ed8; }
     .status-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 10px 14px; background: #e2e8f0; border-radius: 8px; font-weight: bold; }
     .q-badge { background: #3b82f6; color: white; padding: 3px 8px; border-radius: 6px; font-size: 0.85rem; margin-left: 6px; }
-    .passage { line-height: 2.2; font-size: 1.35rem; letter-spacing: 2px; word-break: break-all; user-select: none; border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; background: #fafafa; min-height: 120px; }
+    .passage { line-height: 2.2; font-size: 1.35rem; letter-spacing: 2px; word-break: break-all; user-select: none; border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; background: #fafafa; min-height: 120px; white-space: pre-wrap; }
     .char { cursor: pointer; padding: 2px 4px; border-radius: 4px; transition: 0.15s; display: inline-block; }
     .char:hover { background-color: #cbd5e1; }
     .char.selected { background-color: #fed7aa; }
@@ -43,7 +43,7 @@
       <span id="display-name"></span>
       <span class="q-badge" id="q-label">準備中</span>
     </div>
-    <span>總分：<span id="my-score" style="color: #2563eb;">0 分</span></span>
+    <span>總分：<span id="my-score" style="color: #2563eb;">-- 分</span></span>
   </div>
 
   <div class="passage" id="text-container">等待挑戰開始...</div>
@@ -56,8 +56,8 @@
 </div>
 
 <script>
-  // 請確認已替換為您當前的正確 Apps Script 部署網址
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbwr1wwx0OEYB3nU2f1QnNvAG7QOYoCbgDzjidCPo_qa2NUdGPzFiqDxAzgfrNU_fSYL/exec";
+  // 請確認已填入正確的 Apps Script 部署 URL
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbxj6kgSqTEKOuQ-F7yoTksRhzao0K2Qr-uUKaINWWQfdUgbHlDjBe3jy-_wWMAWG5wZ/exec";
 
   let studentName = "";
   let currentQIndex = -1;
@@ -106,6 +106,7 @@
 
         if (currentQIndex === 0) {
           document.getElementById("q-label").innerText = "準備中";
+          document.getElementById("my-score").innerText = "-- 分";
           document.getElementById("text-container").innerText = "🎮 挑戰尚未開始，請稍候老師發送題目！";
           document.getElementById("selection-box").innerHTML = `
             <div style="color: #64748b; font-weight: bold;">連線成功，等待老師開始第 1 題...</div>
@@ -113,11 +114,14 @@
           return;
         }
 
+        // 新題目開始：分數遮蔽為保密狀態
         document.getElementById("q-label").innerText = `第 ${currentQIndex} / ${data.totalQuestions} 題`;
+        document.getElementById("my-score").innerText = "作答中...";
         resetSelectionBoxUI();
         renderText(articleText);
       }
 
+      // 檢查本題是否已公布答案
       if (currentQIndex > 0 && !isCurrentQRevealed) {
         const statusRes = await fetch(`${GAS_URL}?action=checkStudentStatus&name=${encodeURIComponent(studentName)}&qIndex=${currentQIndex}&t=${Date.now()}`);
         const statusData = await statusRes.json();
