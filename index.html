@@ -57,13 +57,14 @@
 </div>
 
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbxj6kgSqTEKOuQ-F7yoTksRhzao0K2Qr-uUKaINWWQfdUgbHlDjBe3jy-_wWMAWG5wZ/exec";
+  // 已填入您提供的專屬 Apps Script Web App 網址
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbwcTgo7XxoF0lhR_tfX6VN9pUxEjthealpftLi9GQHVTDwL-itsXcMcf6tMfmB8gim7/exec";
 
   let studentName = "";
   let currentQIndex = -1;
   let articleText = "";
-  let selectedTokens = []; // 存放被選取的 token index
-  let tokenList = [];      // 存放分詞結果
+  let selectedTokens = [];
+  let tokenList = [];
   let submittedTokensMap = [];
   let pollingTimer = null;
   let isCurrentQRevealed = false;
@@ -87,6 +88,14 @@
     document.getElementById("display-name").innerText = studentName;
     syncQuestion();
     pollingTimer = setInterval(syncQuestion, 3000);
+
+    // 監聽學生離開 / 關閉分頁，精準記錄登出時間
+    window.addEventListener("beforeunload", () => {
+      if (studentName) {
+        const payload = JSON.stringify({ action: "logout", name: studentName });
+        navigator.sendBeacon(GAS_URL, payload);
+      }
+    });
   }
 
   async function syncQuestion() {
@@ -126,7 +135,6 @@
     } catch (err) {}
   }
 
-  // 支援英文單字與中文的分詞渲染
   function renderTokenizedText(text) {
     const container = document.getElementById("text-container");
     container.innerHTML = "";
@@ -143,7 +151,6 @@
       if (line.trim().length === 0) {
         lineDiv.style.minHeight = "24px";
       } else {
-        // 切分英文單字/標點/中文字
         const tokens = line.match(/[\w'-]+|[^\s\w]|[\s]/g) || [line];
         tokens.forEach(tok => {
           if (tok === " " || tok === " ") {
