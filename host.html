@@ -6,11 +6,12 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 24px; background: #0f172a; color: #f8fafc; }
-    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #334155; padding-bottom: 16px; margin-bottom: 24px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 20px; background: #0f172a; color: #f8fafc; }
+    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #334155; padding-bottom: 14px; margin-bottom: 20px; }
     .q-control { display: flex; align-items: center; gap: 10px; background: #1e293b; padding: 6px 14px; border-radius: 8px; margin-top: 6px; }
-    .container { display: grid; grid-template-columns: 1.6fr 1.4fr; gap: 24px; }
-    .panel { background: #1e293b; border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
+    
+    .container { display: grid; grid-template-columns: 1.55fr 1.45fr; gap: 20px; }
+    .panel { background: #1e293b; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
     
     .passage { 
       font-size: 2rem; 
@@ -25,7 +26,6 @@
       word-break: break-word;
     }
     
-    /* 紅色錯字標籤 */
     .highlight-typo { 
       background-color: #ef4444; 
       color: white; 
@@ -36,8 +36,6 @@
       margin: 0 4px;
       font-size: 2rem;
     }
-
-    /* 綠色正確答案標籤：字體調至 2rem 與題目相同，移除應為字樣後的緊湊排版 */
     .correction-badge { 
       background-color: #22c55e; 
       color: white; 
@@ -51,11 +49,9 @@
       cursor: pointer;
       box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     }
-
-    /* 蓋牌神秘卡片：字體調整為 1.4rem，維持良好可讀性 */
-    .mystery-card {
-      background-color: #f59e0b;
-      color: #0f172a;
+    .mystery-card { 
+      background-color: #f59e0b; 
+      color: #0f172a; 
       font-size: 1.4rem; 
       font-weight: bold; 
       padding: 3px 10px; 
@@ -70,7 +66,71 @@
     }
     .mystery-card:hover { background-color: #fbbf24; transform: scale(1.05); }
 
-    .btn { padding: 9px 16px; font-size: 0.95rem; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    /* 倒數計時器 */
+    .timer-container {
+      background: #0b1120;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .timer-display {
+      font-size: 2rem;
+      font-weight: 800;
+      font-family: monospace;
+      color: #38bdf8;
+      min-width: 90px;
+      text-align: center;
+      background: #1e293b;
+      padding: 4px 12px;
+      border-radius: 8px;
+      border: 1px solid #475569;
+    }
+    .timer-display.danger {
+      color: #ef4444;
+      animation: pulse 1s infinite;
+      border-color: #ef4444;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.06); }
+      100% { transform: scale(1); }
+    }
+    .timer-controls { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .timer-preset-btn {
+      background: #334155;
+      color: #f8fafc;
+      border: 1px solid #475569;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .timer-preset-btn:hover { background: #475569; }
+
+    /* 作答人數卡片 */
+    .submit-counter-box {
+      background: #0b1120;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .counter-tag {
+      font-size: 1.15rem;
+      font-weight: bold;
+      color: #22c55e;
+    }
+
+    .btn { padding: 8px 14px; font-size: 0.9rem; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
     .btn-green { background: #22c55e; color: white; }
     .btn-blue { background: #3b82f6; color: white; }
     .btn-orange { background: #f97316; color: white; }
@@ -78,21 +138,23 @@
     .btn-purple { background: #8b5cf6; color: white; }
     .btn-gray { background: #475569; color: white; }
     .btn:hover { opacity: 0.9; }
-    table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 1rem; }
-    th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #334155; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.95rem; }
+    th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #334155; }
     th { color: #94a3b8; }
     
-    #qrcode { display: flex; justify-content: center; margin: 14px auto; background: white; padding: 14px; border-radius: 12px; width: fit-content; }
+    #qrcode { display: flex; justify-content: center; margin: 10px auto; background: white; padding: 12px; border-radius: 12px; width: fit-content; }
     .admin-locked { display: none !important; }
     .badge-status { font-size: 0.85rem; padding: 4px 8px; border-radius: 4px; vertical-align: middle; margin-left: 8px; }
     .badge-locked { background: #64748b; color: #f8fafc; }
     .badge-unlocked { background: #10b981; color: #ffffff; }
 
-    .players-box { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; min-height: 52px; max-height: 110px; overflow-y: auto; padding: 10px 12px; background: #0b1120; border-radius: 8px; border: 1px solid #334155; align-items: center; }
-    .player-tag { background: #334155; color: #38bdf8; padding: 4px 10px; border-radius: 16px; font-size: 0.95rem; font-weight: bold; }
+    .players-box { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; min-height: 48px; max-height: 90px; overflow-y: auto; padding: 8px 10px; background: #0b1120; border-radius: 8px; border: 1px solid #334155; align-items: center; }
+    .player-tag { background: #334155; color: #38bdf8; padding: 3px 8px; border-radius: 14px; font-size: 0.9rem; font-weight: bold; }
+    .player-tag.offline { background: #1e293b; color: #64748b; border: 1px dashed #475569; }
     
-    .tab-bar { display: flex; gap: 8px; margin-top: 16px; border-bottom: 1px solid #334155; padding-bottom: 8px; }
-    .tab-btn { background: none; border: none; color: #94a3b8; font-size: 1.05rem; font-weight: bold; cursor: pointer; padding: 6px 14px; border-radius: 6px; }
+    .tab-bar { display: flex; gap: 8px; margin-top: 14px; border-bottom: 1px solid #334155; padding-bottom: 8px; }
+    .tab-btn { background: none; border: none; color: #94a3b8; font-size: 1rem; font-weight: bold; cursor: pointer; padding: 5px 12px; border-radius: 6px; }
     .tab-btn.active { background: #38bdf8; color: #0f172a; }
 
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); display: none; justify-content: center; align-items: center; z-index: 9999; }
@@ -126,6 +188,24 @@
 
 <div class="container">
   <div class="panel">
+    <!-- 倒數計時器 (10 ~ 120 秒) -->
+    <div class="timer-container">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-weight: bold; color: #94a3b8;">⏱️ 本題倒數：</span>
+        <div id="timer-display" class="timer-display">00:30</div>
+      </div>
+      
+      <div class="timer-controls admin-ctrl admin-locked">
+        <button class="timer-preset-btn" onclick="setTimerSec(10)">10秒</button>
+        <button class="timer-preset-btn" onclick="setTimerSec(30)">30秒</button>
+        <button class="timer-preset-btn" onclick="setTimerSec(60)">60秒</button>
+        <button class="timer-preset-btn" onclick="setTimerSec(120)">2分</button>
+        <input type="number" id="custom-timer-sec" min="10" max="120" value="30" style="width: 50px; background: #0f172a; color: white; border: 1px solid #475569; border-radius: 4px; padding: 3px; text-align: center;">
+        <button class="btn btn-blue" id="timer-btn" onclick="toggleTimer()">開始</button>
+        <button class="btn btn-gray" onclick="resetTimer()">重設</button>
+      </div>
+    </div>
+
     <h2>📄 文章內容 <span id="reveal-hint" style="font-size: 0.95rem; font-weight: normal; color: #f59e0b; display: none;">（點擊蓋牌處可手動揭曉解答）</span></h2>
     <div id="passage-box" class="passage">🎮 遊戲準備中，等待老師開始...</div>
   </div>
@@ -133,16 +213,22 @@
   <div class="panel">
     <h2>📱 掃描加入遊戲</h2>
     <div id="qrcode"></div>
-    <p id="student-url" style="color: #94a3b8; font-size: 0.9rem; text-align: center; word-break: break-all; margin: 4px 0 12px;"></p>
+    <p id="student-url" style="color: #94a3b8; font-size: 0.85rem; text-align: center; word-break: break-all; margin: 2px 0 10px;"></p>
 
-    <h3 style="margin: 8px 0;">👥 已連線玩家 (<span id="player-count" style="color: #38bdf8;">0</span> 人)</h3>
+    <h3 style="margin: 6px 0;">👥 已連線玩家 (<span id="player-count" style="color: #38bdf8;">0</span> 人)</h3>
     <div class="players-box" id="players-list">
-      <span style="color: #64748b; font-size: 0.95rem;">等待學生掃碼加入...</span>
+      <span style="color: #64748b; font-size: 0.9rem;">等待學生掃碼加入...</span>
     </div>
 
     <div class="tab-bar">
       <button id="tab-curr" class="tab-btn active" onclick="switchTab('current')">🎯 本題作答詳情</button>
       <button id="tab-total" class="tab-btn" onclick="switchTab('total')">🏆 全場累積排行榜</button>
+    </div>
+
+    <!-- 已作答人數即時統計 -->
+    <div class="submit-counter-box" id="submit-counter-box">
+      <span style="color: #94a3b8;">本題繳交進度：</span>
+      <span class="counter-tag" id="submitted-stat-text">已作答：0 / 0 人 (0%)</span>
     </div>
 
     <table id="table-curr">
@@ -151,8 +237,8 @@
     </table>
 
     <table id="table-total" style="display: none;">
-      <thead><tr><th>排名</th><th>姓名</th><th>抓對/誤抓/漏抓</th><th>累計總分</th></tr></thead>
-      <tbody id="total-body"><tr><td colspan="4" style="text-align:center; color: #64748b;">等待學生作答中...</td></tr></tbody>
+      <thead><tr><th>排名</th><th>姓名</th><th>抓對/誤抓/漏抓</th><th>狀態</th><th>累計總分</th></tr></thead>
+      <tbody id="total-body"><tr><td colspan="5" style="text-align:center; color: #64748b;">等待學生作答中...</td></tr></tbody>
     </table>
   </div>
 </div>
@@ -169,13 +255,82 @@
 </div>
 
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbxj6kgSqTEKOuQ-F7yoTksRhzao0K2Qr-uUKaINWWQfdUgbHlDjBe3jy-_wWMAWG5wZ/exec";
+  // 已填入您提供的專屬 Apps Script Web App 網址
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbwcTgo7XxoF0lhR_tfX6VN9pUxEjthealpftLi9GQHVTDwL-itsXcMcf6tMfmB8gim7/exec";
   const ADMIN_PASS = "4321";
   let isAdmin = false;
   let hostData = null;
   let currentTab = "current";
   let manualRevealedSet = new Set();
   let lastRevealedQ = -1;
+
+  // 倒數計時器
+  let timerDuration = 30;
+  let timerRemaining = 30;
+  let timerInterval = null;
+  let isTimerRunning = false;
+
+  function setTimerSec(sec) {
+    sec = Math.max(10, Math.min(120, parseInt(sec) || 30));
+    document.getElementById("custom-timer-sec").value = sec;
+    resetTimer();
+  }
+
+  function formatTime(sec) {
+    const m = Math.floor(sec / 60).toString().padStart(2, '0');
+    const s = (sec % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  }
+
+  function updateTimerDisplay() {
+    const el = document.getElementById("timer-display");
+    el.innerText = formatTime(timerRemaining);
+    if (timerRemaining <= 5 && isTimerRunning) {
+      el.classList.add("danger");
+    } else {
+      el.classList.remove("danger");
+    }
+  }
+
+  function toggleTimer() {
+    if (isTimerRunning) {
+      clearInterval(timerInterval);
+      isTimerRunning = false;
+      document.getElementById("timer-btn").innerText = "繼續";
+      document.getElementById("timer-btn").className = "btn btn-blue";
+    } else {
+      if (timerRemaining <= 0) resetTimer();
+      isTimerRunning = true;
+      document.getElementById("timer-btn").innerText = "暫停";
+      document.getElementById("timer-btn").className = "btn btn-orange";
+
+      timerInterval = setInterval(() => {
+        timerRemaining--;
+        updateTimerDisplay();
+        if (timerRemaining <= 0) {
+          clearInterval(timerInterval);
+          isTimerRunning = false;
+          document.getElementById("timer-btn").innerText = "結束";
+          document.getElementById("timer-btn").className = "btn btn-red";
+        }
+      }, 1000);
+    }
+  }
+
+  function resetTimer() {
+    clearInterval(timerInterval);
+    isTimerRunning = false;
+    let customVal = parseInt(document.getElementById("custom-timer-sec").value) || 30;
+    timerDuration = Math.max(10, Math.min(120, customVal));
+    document.getElementById("custom-timer-sec").value = timerDuration;
+    timerRemaining = timerDuration;
+    updateTimerDisplay();
+    document.getElementById("timer-btn").innerText = "開始";
+    document.getElementById("timer-btn").className = "btn btn-blue";
+    document.getElementById("timer-display").classList.remove("danger");
+  }
+
+  document.getElementById("custom-timer-sec").addEventListener("change", resetTimer);
 
   function toggleAdminMode() {
     if (isAdmin) { isAdmin = false; applyAdminUI(); return; }
@@ -226,8 +381,10 @@
   window.onload = function() {
     const playerUrl = window.location.href.replace(/host\.html.*$/, 'index.html');
     document.getElementById("student-url").innerText = playerUrl;
-    new QRCode(document.getElementById("qrcode"), { text: playerUrl, width: 200, height: 200 });
-    loadData(); setInterval(loadData, 3000);
+    new QRCode(document.getElementById("qrcode"), { text: playerUrl, width: 170, height: 170 });
+    updateTimerDisplay();
+    loadData();
+    setInterval(loadData, 3000);
   };
 
   async function loadData() {
@@ -235,7 +392,13 @@
       const res = await fetch(`${GAS_URL}?action=getHostData&t=${Date.now()}`);
       const data = await res.json();
       hostData = data;
-      renderPlayers(data.players || []);
+
+      renderPlayers(data.players || [], data.logoutTimes || {});
+
+      const totalP = (data.players || []).length;
+      const subP = data.submittedCount || 0;
+      const pct = totalP > 0 ? Math.round((subP / totalP) * 100) : 0;
+      document.getElementById("submitted-stat-text").innerText = `已作答：${subP} / ${totalP} 人 (${pct}%)`;
 
       if (data.currentQ === 0) {
         document.getElementById("current-q-text").innerText = "準備中";
@@ -243,8 +406,8 @@
         document.getElementById("reveal-hint").style.display = "none";
         document.getElementById("start-game-btn").style.display = isAdmin ? "inline-block" : "none";
       } else {
-        document.getElementById("current-q-text").innerText = `第 ${data.currentQ} / ${data.totalQuestions} 題`;
         document.getElementById("start-game-btn").style.display = "none";
+        document.getElementById("current-q-text").innerText = `第 ${data.currentQ} / ${data.totalQuestions} 題`;
 
         if (data.isRevealed === true) {
           if (lastRevealedQ !== data.currentQ) { manualRevealedSet.clear(); lastRevealedQ = data.currentQ; }
@@ -257,15 +420,18 @@
         }
       }
       renderCurrentQBoard(data.currentQStats || {}, (data.isRevealed === true));
-      renderTotalBoard(data.totalStats || {}, (data.isRevealed === true));
+      renderTotalBoard(data.totalStats || {}, data.logoutTimes || {});
     } catch (e) { console.error("更新失敗", e); }
   }
 
-  function renderPlayers(players) {
+  function renderPlayers(players, logoutTimes) {
     document.getElementById("player-count").innerText = players.length;
     const box = document.getElementById("players-list");
     if (players.length === 0) { box.innerHTML = `<span style="color: #64748b; font-size: 0.95rem;">等待學生掃碼加入...</span>`; return; }
-    box.innerHTML = players.map(name => `<span class="player-tag">👤 ${name}</span>`).join("");
+    box.innerHTML = players.map(name => {
+      const isOff = logoutTimes && logoutTimes[name];
+      return `<span class="player-tag ${isOff ? 'offline' : ''}">👤 ${name}${isOff ? ' (已離線)' : ''}</span>`;
+    }).join("");
   }
 
   function renderCurrentQBoard(currStats, isRevealed) {
@@ -298,35 +464,48 @@
     }
   }
 
-  function renderTotalBoard(totalStats, isRevealed) {
+  function renderTotalBoard(totalStats, logoutTimes) {
     const tbody = document.getElementById("total-body");
     const list = Object.entries(totalStats).map(([name, s]) => ({ name, ...s })).sort((a, b) => b.score - a.score);
-    if (list.length === 0) { tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: #64748b;">等待作答中...</td></tr>`; return; }
-    tbody.innerHTML = list.map((item, idx) => `
-      <tr>
-        <td>${idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : idx + 1}</td>
-        <td><b>${item.name}</b></td>
-        <td>
-          <span style="color:#22c55e;">${item.correctCount}</span> / 
-          <span style="color:#ef4444;">${item.wrongCount}</span> / 
-          <span style="color:#f97316;">${item.missedCount}</span>
-        </td>
-        <td style="color:#38bdf8; font-weight:bold;">${item.score}</td>
-      </tr>
-    `).join("");
+    if (list.length === 0) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: #64748b;">等待作答中...</td></tr>`; return; }
+    tbody.innerHTML = list.map((item, idx) => {
+      const isOff = logoutTimes && logoutTimes[item.name];
+      return `
+        <tr>
+          <td>${idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : idx + 1}</td>
+          <td><b>${item.name}</b></td>
+          <td>
+            <span style="color:#22c55e;">${item.correctCount}</span> / 
+            <span style="color:#ef4444;">${item.wrongCount}</span> / 
+            <span style="color:#f97316;">${item.missedCount}</span>
+          </td>
+          <td>${isOff ? `<span style="color:#94a3b8; font-size:0.85rem;">已離線 (${isOff.split(' ')[1]})</span>` : '<span style="color:#22c55e; font-size:0.85rem;">● 在線中</span>'}</td>
+          <td style="color:#38bdf8; font-weight:bold;">${item.score}</td>
+        </tr>
+      `;
+    }).join("");
   }
 
-  async function startFirstQuestion() { await fetch(`${GAS_URL}?action=switchQuestion&qIndex=1&t=${Date.now()}`); loadData(); }
+  async function startFirstQuestion() {
+    await fetch(`${GAS_URL}?action=switchQuestion&qIndex=1&t=${Date.now()}`);
+    resetTimer();
+    loadData();
+  }
+
   async function changeQuestion(offset) {
     if (!hostData || hostData.currentQ === 0) return alert("請先點擊【🚀 開始第 1 題】！");
     const nextQ = hostData.currentQ + offset;
     if (nextQ < 1 || nextQ > hostData.totalQuestions) return alert("已經沒有更多題目了！");
     manualRevealedSet.clear();
     await fetch(`${GAS_URL}?action=switchQuestion&qIndex=${nextQ}&t=${Date.now()}`);
+    resetTimer();
     loadData();
   }
+
   async function revealAnswers() {
     if (!hostData || hostData.currentQ === 0) return alert("挑戰尚未開始！");
+    clearInterval(timerInterval);
+    isTimerRunning = false;
     manualRevealedSet.clear();
     await fetch(`${GAS_URL}?action=setReveal&t=${Date.now()}`);
     loadData();
@@ -338,16 +517,14 @@
     renderRevealedPassage(hostData);
   }
 
-  // 渲染解答：字體與題目相同（2rem），且刪除「應為:」字樣
+  // Token 化渲染：防止 HTML 標籤屬性破裂，且解答與題目同字體大小（2rem）
   function renderRevealedPassage(data) {
     const box = document.getElementById("passage-box");
     box.innerHTML = "";
-
     const tokens = data.text.match(/[\w'-]+|[^\s\w]|[\s]/g) || [data.text];
 
     tokens.forEach(tok => {
       const typoIdx = data.typos.findIndex(t => t.toLowerCase() === tok.trim().toLowerCase());
-
       if (typoIdx !== -1 && tok.trim().length > 0) {
         const spanTypo = document.createElement("span");
         spanTypo.className = "highlight-typo";
@@ -356,10 +533,9 @@
 
         const correct = data.corrections[typoIdx] || "";
         const badge = document.createElement("span");
-
         if (manualRevealedSet.has(typoIdx)) {
           badge.className = "correction-badge";
-          badge.innerText = correct; // 刪除「應為:」，只顯示正確答案
+          badge.innerText = correct;
           badge.title = "點擊重新蓋牌";
         } else {
           badge.className = "mystery-card";
@@ -374,22 +550,34 @@
     });
   }
 
+  // 匯出 Excel：含時間戳記與學生離線時間
   function exportToExcel() {
     if (!hostData || Object.keys(hostData.totalStats).length === 0) return alert("目前沒有作答紀錄可匯出！");
+
+    const exportTime = new Date().toLocaleString("zh-TW", { timeZone: "Asia/Taipei" });
+    const logouts = hostData.logoutTimes || {};
+
     const exportData = Object.entries(hostData.totalStats).map(([name, stat], idx) => ({
-      "排名": idx + 1, "姓名/座號": name,
-      "累計抓對字數": stat.correctCount, "累計誤抓字數": stat.wrongCount,
-      "累計漏抓錯字": stat.missedCount, "總積分": stat.score
+      "排名": idx + 1,
+      "姓名/座號": name,
+      "累計抓對字數": stat.correctCount,
+      "累計誤抓字數": stat.wrongCount,
+      "累計漏抓錯字": stat.missedCount,
+      "總積分": stat.score,
+      "學生登出/最後離開時間": logouts[name] || "未登出(在線中)",
+      "成績單匯出時間戳記": exportTime
     })).sort((a, b) => b["總積分"] - a["總積分"]);
+
     const worksheet = XLSX.utils.json_to_sheet(exportData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "挑戰總成績");
-    XLSX.writeFile(workbook, `掠漏大車拚累計成績單_${new Date().toISOString().slice(0,10)}.xlsx`);
+    XLSX.writeFile(workbook, `掠漏大車拚成績單_${new Date().toISOString().slice(0,10)}_${Date.now()}.xlsx`);
   }
 
   async function resetRound() {
     if (!confirm("確定要清空所有紀錄並回到未開始狀態嗎？")) return;
     manualRevealedSet.clear();
+    resetTimer();
     await fetch(`${GAS_URL}?action=resetScores&t=${Date.now()}`);
     loadData();
     alert("已重設遊戲為準備階段！");
