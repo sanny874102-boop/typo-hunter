@@ -32,9 +32,9 @@
       padding: 2px 8px; 
       border-radius: 6px; 
       font-weight: bold; 
-      display: inline-block;
-      margin: 0 4px;
-      font-size: 2rem;
+      display: inline-block; 
+      margin: 0 4px; 
+      font-size: 2rem; 
     }
     .correction-badge { 
       background-color: #22c55e; 
@@ -43,11 +43,11 @@
       padding: 2px 10px; 
       border-radius: 6px; 
       margin-left: 4px; 
-      display: inline-block;
-      vertical-align: baseline;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      display: inline-block; 
+      vertical-align: baseline; 
+      font-weight: bold; 
+      cursor: pointer; 
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3); 
     }
     .mystery-card { 
       background-color: #f59e0b; 
@@ -59,7 +59,7 @@
       margin-left: 4px; 
       cursor: pointer; 
       display: inline-block; 
-      vertical-align: baseline;
+      vertical-align: baseline; 
       border: 2px dashed #b45309; 
       user-select: none; 
       transition: 0.2s; 
@@ -151,7 +151,6 @@
 
     .players-box { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; min-height: 48px; max-height: 90px; overflow-y: auto; padding: 8px 10px; background: #0b1120; border-radius: 8px; border: 1px solid #334155; align-items: center; }
     .player-tag { background: #334155; color: #38bdf8; padding: 3px 8px; border-radius: 14px; font-size: 0.9rem; font-weight: bold; }
-    .player-tag.offline { background: #1e293b; color: #64748b; border: 1px dashed #475569; }
     
     .tab-bar { display: flex; gap: 8px; margin-top: 14px; border-bottom: 1px solid #334155; padding-bottom: 8px; }
     .tab-btn { background: none; border: none; color: #94a3b8; font-size: 1rem; font-weight: bold; cursor: pointer; padding: 5px 12px; border-radius: 6px; }
@@ -215,7 +214,7 @@
     <div id="qrcode"></div>
     <p id="student-url" style="color: #94a3b8; font-size: 0.85rem; text-align: center; word-break: break-all; margin: 2px 0 10px;"></p>
 
-    <h3 style="margin: 6px 0;">👥 已連線玩家 (<span id="player-count" style="color: #38bdf8;">0</span> 人)</h3>
+    <h3 style="margin: 6px 0;">👥 已連線在線玩家 (<span id="player-count" style="color: #38bdf8;">0</span> 人)</h3>
     <div class="players-box" id="players-list">
       <span style="color: #64748b; font-size: 0.9rem;">等待學生掃碼加入...</span>
     </div>
@@ -225,7 +224,7 @@
       <button id="tab-total" class="tab-btn" onclick="switchTab('total')">🏆 全場累積排行榜</button>
     </div>
 
-    <!-- 已作答人數即時統計 -->
+    <!-- 即時作答進度（離線者直接不計入分母） -->
     <div class="submit-counter-box" id="submit-counter-box">
       <span style="color: #94a3b8;">本題繳交進度：</span>
       <span class="counter-tag" id="submitted-stat-text">已作答：0 / 0 人 (0%)</span>
@@ -237,7 +236,7 @@
     </table>
 
     <table id="table-total" style="display: none;">
-      <thead><tr><th>排名</th><th>姓名</th><th>抓對/誤抓/漏抓</th><th>狀態</th><th>累計總分</th></tr></thead>
+      <thead><tr><th>排名</th><th>姓名</th><th>抓對/誤抓/漏抓</th><th>在線狀態</th><th>累計總分</th></tr></thead>
       <tbody id="total-body"><tr><td colspan="5" style="text-align:center; color: #64748b;">等待學生作答中...</td></tr></tbody>
     </table>
   </div>
@@ -256,7 +255,7 @@
 
 <script>
   // 已填入您提供的專屬 Apps Script Web App 網址
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbwcTgo7XxoF0lhR_tfX6VN9pUxEjthealpftLi9GQHVTDwL-itsXcMcf6tMfmB8gim7/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbzh0EvZqIufhHl27AembP0CNHKGlmeKGlUpMjYDjcaf3y-3KjaPyJZaOokXqoj4QcBn/exec";
   const ADMIN_PASS = "4321";
   let isAdmin = false;
   let hostData = null;
@@ -393,12 +392,13 @@
       const data = await res.json();
       hostData = data;
 
-      renderPlayers(data.players || [], data.logoutTimes || {});
+      // 離線者已在後端直接剔除，此處僅呈現真正連線中玩家
+      renderPlayers(data.players || []);
 
-      const totalP = (data.players || []).length;
+      const onlineTotal = (data.players || []).length;
       const subP = data.submittedCount || 0;
-      const pct = totalP > 0 ? Math.round((subP / totalP) * 100) : 0;
-      document.getElementById("submitted-stat-text").innerText = `已作答：${subP} / ${totalP} 人 (${pct}%)`;
+      const pct = onlineTotal > 0 ? Math.round((subP / onlineTotal) * 100) : 0;
+      document.getElementById("submitted-stat-text").innerText = `已作答：${subP} / ${onlineTotal} 人 (${pct}%)`;
 
       if (data.currentQ === 0) {
         document.getElementById("current-q-text").innerText = "準備中";
@@ -420,18 +420,15 @@
         }
       }
       renderCurrentQBoard(data.currentQStats || {}, (data.isRevealed === true));
-      renderTotalBoard(data.totalStats || {}, data.logoutTimes || {});
+      renderTotalBoard(data.totalStats || {}, data.players || []);
     } catch (e) { console.error("更新失敗", e); }
   }
 
-  function renderPlayers(players, logoutTimes) {
+  function renderPlayers(players) {
     document.getElementById("player-count").innerText = players.length;
     const box = document.getElementById("players-list");
     if (players.length === 0) { box.innerHTML = `<span style="color: #64748b; font-size: 0.95rem;">等待學生掃碼加入...</span>`; return; }
-    box.innerHTML = players.map(name => {
-      const isOff = logoutTimes && logoutTimes[name];
-      return `<span class="player-tag ${isOff ? 'offline' : ''}">👤 ${name}${isOff ? ' (已離線)' : ''}</span>`;
-    }).join("");
+    box.innerHTML = players.map(name => `<span class="player-tag">👤 ${name}</span>`).join("");
   }
 
   function renderCurrentQBoard(currStats, isRevealed) {
@@ -464,12 +461,12 @@
     }
   }
 
-  function renderTotalBoard(totalStats, logoutTimes) {
+  function renderTotalBoard(totalStats, activePlayers) {
     const tbody = document.getElementById("total-body");
     const list = Object.entries(totalStats).map(([name, s]) => ({ name, ...s })).sort((a, b) => b.score - a.score);
     if (list.length === 0) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: #64748b;">等待作答中...</td></tr>`; return; }
     tbody.innerHTML = list.map((item, idx) => {
-      const isOff = logoutTimes && logoutTimes[item.name];
+      const isOnline = activePlayers.includes(item.name);
       return `
         <tr>
           <td>${idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : idx + 1}</td>
@@ -479,7 +476,7 @@
             <span style="color:#ef4444;">${item.wrongCount}</span> / 
             <span style="color:#f97316;">${item.missedCount}</span>
           </td>
-          <td>${isOff ? `<span style="color:#94a3b8; font-size:0.85rem;">已離線 (${isOff.split(' ')[1]})</span>` : '<span style="color:#22c55e; font-size:0.85rem;">● 在線中</span>'}</td>
+          <td>${isOnline ? '<span style="color:#22c55e; font-size:0.85rem; font-weight:bold;">● 在線中</span>' : `<span style="color:#94a3b8; font-size:0.85rem;">已離線</span>`}</td>
           <td style="color:#38bdf8; font-weight:bold;">${item.score}</td>
         </tr>
       `;
@@ -550,12 +547,14 @@
     });
   }
 
-  // 匯出 Excel：含時間戳記與學生離線時間
+  // 匯出 Excel：加入登入時間戳記、登出時間戳記與成績單匯出時間
   function exportToExcel() {
     if (!hostData || Object.keys(hostData.totalStats).length === 0) return alert("目前沒有作答紀錄可匯出！");
 
     const exportTime = new Date().toLocaleString("zh-TW", { timeZone: "Asia/Taipei" });
+    const logins = hostData.loginTimes || {};
     const logouts = hostData.logoutTimes || {};
+    const onlineList = hostData.players || [];
 
     const exportData = Object.entries(hostData.totalStats).map(([name, stat], idx) => ({
       "排名": idx + 1,
@@ -564,7 +563,8 @@
       "累計誤抓字數": stat.wrongCount,
       "累計漏抓錯字": stat.missedCount,
       "總積分": stat.score,
-      "學生登出/最後離開時間": logouts[name] || "未登出(在線中)",
+      "學生登入時間戳記": logins[name] || "未記錄",
+      "學生登出/離開時間戳記": logouts[name] || (onlineList.includes(name) ? "仍連線在線中" : "已離線"),
       "成績單匯出時間戳記": exportTime
     })).sort((a, b) => b["總積分"] - a["總積分"]);
 
