@@ -66,6 +66,7 @@
     }
     .mystery-card:hover { background-color: #fbbf24; transform: scale(1.05); }
 
+    /* 倒數計時器樣式 (10~120秒) */
     .timer-container {
       background: #0b1120;
       border: 1px solid #334155;
@@ -112,6 +113,7 @@
     }
     .timer-preset-btn:hover { background: #475569; }
 
+    /* 作答人數卡片 */
     .submit-counter-box {
       background: #0b1120;
       border: 1px solid #334155;
@@ -154,6 +156,7 @@
     .tab-btn { background: none; border: none; color: #94a3b8; font-size: 1rem; font-weight: bold; cursor: pointer; padding: 5px 12px; border-radius: 6px; }
     .tab-btn.active { background: #38bdf8; color: #0f172a; }
 
+    /* 密碼黑點遮罩彈窗 */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); display: none; justify-content: center; align-items: center; z-index: 9999; }
     .modal-box { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 24px; width: 300px; text-align: center; }
     .modal-box input[type="password"] { width: 100%; padding: 10px; font-size: 1.1rem; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #f8fafc; margin-bottom: 16px; text-align: center; letter-spacing: 4px; box-sizing: border-box; }
@@ -185,7 +188,7 @@
 
 <div class="container">
   <div class="panel">
-    <!-- 倒數計時器 -->
+    <!-- 倒數計時器 (最少 10 秒，最多 120 秒) -->
     <div class="timer-container">
       <div style="display: flex; align-items: center; gap: 10px;">
         <span style="font-weight: bold; color: #94a3b8;">⏱️ 本題倒數：</span>
@@ -222,7 +225,7 @@
       <button id="tab-total" class="tab-btn" onclick="switchTab('total')">🏆 全場累積排行榜</button>
     </div>
 
-    <!-- 即時作答進度 -->
+    <!-- 即時作答進度：離線者直接剔除不計入分母 -->
     <div class="submit-counter-box" id="submit-counter-box">
       <span style="color: #94a3b8;">本題繳交進度：</span>
       <span class="counter-tag" id="submitted-stat-text">已作答：0 / 0 人 (0%)</span>
@@ -240,6 +243,7 @@
   </div>
 </div>
 
+<!-- 密碼輸入對話框（遮罩保護） -->
 <div class="modal-overlay" id="pwd-modal">
   <div class="modal-box">
     <h3 style="margin-top:0; color:#f8fafc;">輸入密碼</h3>
@@ -252,7 +256,8 @@
 </div>
 
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbxLQV9VnWm5AoROdFM91ol79sVLSV2UzsDm4L6FK-yvfMlEodq83Y7cddyzc_0DDX9Z/exec";
+  // 您指定的 Apps Script 部署 URL
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbzrmIUYGyWT_J5xAwzCRLQlOZPjM1kt50U9Bm77_rqltVOGMIzTiWKfnR_xsCVzJjpC/exec";
   const ADMIN_PASS = "4321";
   let isAdmin = false;
   let hostData = null;
@@ -260,6 +265,7 @@
   let manualRevealedSet = new Set();
   let lastRevealedQ = -1;
 
+  // 倒數計時器變數 (範圍：10 ~ 120 秒)
   let timerDuration = 30;
   let timerRemaining = 30;
   let timerInterval = null;
@@ -388,6 +394,7 @@
       const data = await res.json();
       hostData = data;
 
+      // 離線者已在後端直接剔除，此處僅呈現真正連線中玩家
       renderPlayers(data.players || []);
 
       const onlineTotal = (data.players || []).length;
@@ -509,6 +516,7 @@
     renderRevealedPassage(hostData);
   }
 
+  // Token 化渲染：防止 HTML 標籤破壞，且答案字體大小與題目相同（2rem），不顯示「應為:」
   function renderRevealedPassage(data) {
     const box = document.getElementById("passage-box");
     box.innerHTML = "";
@@ -541,7 +549,7 @@
     });
   }
 
-  // 匯出 Excel：加入登入時間戳記、登出時間戳記與成績單匯出時間
+  // 匯出 Excel：保證印出登入時間戳記、登出時間戳記與成績單匯出時間
   function exportToExcel() {
     if (!hostData || Object.keys(hostData.totalStats).length === 0) return alert("目前沒有作答紀錄可匯出！");
 
@@ -573,13 +581,21 @@
     XLSX.writeFile(workbook, `掠漏大車拚成績單_${new Date().toISOString().slice(0,10)}_${Date.now()}.xlsx`);
   }
 
+  // 清空總紀錄：畫面立即歸零並讓學生端自動踢除
   async function resetRound() {
-    if (!confirm("確定要清空所有紀錄並回到未開始狀態嗎？")) return;
+    if (!confirm("確定要清空所有紀錄並回到未開始狀態嗎？（這將強制所有學生登出剔除）")) return;
     manualRevealedSet.clear();
     resetTimer();
+    if (hostData) {
+      hostData.players = [];
+      hostData.totalStats = {};
+      hostData.currentQStats = {};
+      hostData.submittedCount = 0;
+    }
+    renderPlayers([]);
     await fetch(`${GAS_URL}?action=resetScores&t=${Date.now()}`);
     loadData();
-    alert("已重設遊戲為準備階段！");
+    alert("已清空總紀錄，所有學生端將於 3 秒內自動踢回登入畫面！");
   }
 </script>
 </body>
