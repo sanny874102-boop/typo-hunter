@@ -58,7 +58,7 @@
 
 <script>
   // 已填入您提供的專屬 Apps Script Web App 網址
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbwcTgo7XxoF0lhR_tfX6VN9pUxEjthealpftLi9GQHVTDwL-itsXcMcf6tMfmB8gim7/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbzh0EvZqIufhHl27AembP0CNHKGlmeKGlUpMjYDjcaf3y-3KjaPyJZaOokXqoj4QcBn/exec";
 
   let studentName = "";
   let currentQIndex = -1;
@@ -89,7 +89,7 @@
     syncQuestion();
     pollingTimer = setInterval(syncQuestion, 3000);
 
-    // 監聽學生離開 / 關閉分頁，精準記錄登出時間
+    // 學生關閉視窗/離開分頁時，即時通報後端踢除並記錄時間
     window.addEventListener("beforeunload", () => {
       if (studentName) {
         const payload = JSON.stringify({ action: "logout", name: studentName });
