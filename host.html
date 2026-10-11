@@ -9,36 +9,35 @@
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 24px; background: #0f172a; color: #f8fafc; }
     .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #334155; padding-bottom: 16px; margin-bottom: 24px; }
     .q-control { display: flex; align-items: center; gap: 10px; background: #1e293b; padding: 6px 14px; border-radius: 8px; margin-top: 6px; }
-    
     .container { display: grid; grid-template-columns: 1.6fr 1.4fr; gap: 24px; }
     .panel { background: #1e293b; border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
     
     .passage { 
       font-size: 2rem; 
       line-height: 2.3; 
-      letter-spacing: 3px; 
+      letter-spacing: 1px; 
       background: #0b1120; 
       padding: 24px; 
       border-radius: 8px; 
       border: 1px solid #334155; 
       min-height: 200px; 
       white-space: pre-wrap; 
-      word-break: break-all;
+      word-break: break-word;
     }
     
     .highlight-typo { 
       background-color: #ef4444; 
       color: white; 
-      padding: 4px 8px; 
+      padding: 3px 8px; 
       border-radius: 6px; 
       font-weight: bold; 
       display: inline-block;
-      margin: 0 2px;
+      margin: 0 4px;
     }
     .correction-badge { 
       background-color: #22c55e; 
       color: white; 
-      font-size: 1.2rem; 
+      font-size: 1.15rem; 
       padding: 3px 8px; 
       border-radius: 6px; 
       margin-left: 4px; 
@@ -49,9 +48,9 @@
     .mystery-card {
       background-color: #f59e0b;
       color: #0f172a;
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: bold;
-      padding: 3px 10px;
+      padding: 3px 8px;
       border-radius: 6px;
       margin-left: 4px;
       cursor: pointer;
@@ -61,10 +60,7 @@
       user-select: none;
       transition: 0.2s;
     }
-    .mystery-card:hover {
-      background-color: #fbbf24;
-      transform: scale(1.05);
-    }
+    .mystery-card:hover { background-color: #fbbf24; transform: scale(1.05); }
 
     .btn { padding: 9px 16px; font-size: 0.95rem; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
     .btn-green { background: #22c55e; color: white; }
@@ -78,63 +74,22 @@
     th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #334155; }
     th { color: #94a3b8; }
     
-    #qrcode { 
-      display: flex; 
-      justify-content: center; 
-      margin: 14px auto; 
-      background: white; 
-      padding: 14px; 
-      border-radius: 12px; 
-      width: fit-content; 
-    }
-    
+    #qrcode { display: flex; justify-content: center; margin: 14px auto; background: white; padding: 14px; border-radius: 12px; width: fit-content; }
     .admin-locked { display: none !important; }
     .badge-status { font-size: 0.85rem; padding: 4px 8px; border-radius: 4px; vertical-align: middle; margin-left: 8px; }
     .badge-locked { background: #64748b; color: #f8fafc; }
     .badge-unlocked { background: #10b981; color: #ffffff; }
 
-    .players-box { 
-      display: flex; 
-      flex-wrap: wrap; 
-      gap: 8px; 
-      margin-top: 8px; 
-      min-height: 52px;
-      max-height: 110px; 
-      overflow-y: auto; 
-      padding: 10px 12px; 
-      background: #0b1120; 
-      border-radius: 8px; 
-      border: 1px solid #334155; 
-      align-items: center;
-    }
-    .player-tag { 
-      background: #334155; 
-      color: #38bdf8; 
-      padding: 4px 10px; 
-      border-radius: 16px; 
-      font-size: 0.95rem; 
-      font-weight: bold; 
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    }
+    .players-box { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; min-height: 52px; max-height: 110px; overflow-y: auto; padding: 10px 12px; background: #0b1120; border-radius: 8px; border: 1px solid #334155; align-items: center; }
+    .player-tag { background: #334155; color: #38bdf8; padding: 4px 10px; border-radius: 16px; font-size: 0.95rem; font-weight: bold; }
     
     .tab-bar { display: flex; gap: 8px; margin-top: 16px; border-bottom: 1px solid #334155; padding-bottom: 8px; }
     .tab-btn { background: none; border: none; color: #94a3b8; font-size: 1.05rem; font-weight: bold; cursor: pointer; padding: 6px 14px; border-radius: 6px; }
     .tab-btn.active { background: #38bdf8; color: #0f172a; }
 
-    .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.75); display: none;
-      justify-content: center; align-items: center; z-index: 9999;
-    }
-    .modal-box {
-      background: #1e293b; border: 1px solid #334155; border-radius: 12px;
-      padding: 24px; width: 300px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    }
-    .modal-box input[type="password"] {
-      width: 100%; padding: 10px; font-size: 1.1rem; border-radius: 6px;
-      border: 1px solid #475569; background: #0f172a; color: #f8fafc;
-      box-sizing: border-box; margin-bottom: 16px; text-align: center; letter-spacing: 4px;
-    }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); display: none; justify-content: center; align-items: center; z-index: 9999; }
+    .modal-box { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 24px; width: 300px; text-align: center; }
+    .modal-box input[type="password"] { width: 100%; padding: 10px; font-size: 1.1rem; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #f8fafc; margin-bottom: 16px; text-align: center; letter-spacing: 4px; box-sizing: border-box; }
     .modal-actions { display: flex; justify-content: space-between; gap: 10px; }
     .modal-actions button { flex: 1; }
   </style>
@@ -145,7 +100,6 @@
   <div>
     <h1 style="margin: 0; display: inline-block;">🎮 掠漏大車拚 - 大螢幕主控台</h1>
     <span id="admin-badge" class="badge-status badge-locked">看板模式</span>
-    
     <div class="q-control">
       <button id="start-game-btn" class="btn btn-purple admin-ctrl admin-locked" onclick="startFirstQuestion()">🚀 開始第 1 題</button>
       <button class="btn btn-gray admin-ctrl admin-locked" onclick="changeQuestion(-1)">◀ 上一題</button>
@@ -184,26 +138,17 @@
     </div>
 
     <table id="table-curr">
-      <thead>
-        <tr><th>姓名</th><th>作答進度</th><th>本題得分</th></tr>
-      </thead>
-      <tbody id="current-q-body">
-        <tr><td colspan="3" style="text-align:center; color: #64748b;">等待作答...</td></tr>
-      </tbody>
+      <thead><tr><th>姓名</th><th>作答進度</th><th>本題得分</th></tr></thead>
+      <tbody id="current-q-body"><tr><td colspan="3" style="text-align:center; color: #64748b;">等待作答...</td></tr></tbody>
     </table>
 
     <table id="table-total" style="display: none;">
-      <thead>
-        <tr><th>排名</th><th>姓名</th><th>抓對/誤抓/漏抓</th><th>累計總分</th></tr>
-      </thead>
-      <tbody id="total-body">
-        <tr><td colspan="4" style="text-align:center; color: #64748b;">等待學生作答中...</td></tr>
-      </tbody>
+      <thead><tr><th>排名</th><th>姓名</th><th>抓對/誤抓/漏抓</th><th>累計總分</th></tr></thead>
+      <tbody id="total-body"><tr><td colspan="4" style="text-align:center; color: #64748b;">等待學生作答中...</td></tr></tbody>
     </table>
   </div>
 </div>
 
-<!-- 密碼輸入對話框（遮罩保護） -->
 <div class="modal-overlay" id="pwd-modal">
   <div class="modal-box">
     <h3 style="margin-top:0; color:#f8fafc;">輸入密碼</h3>
@@ -216,70 +161,42 @@
 </div>
 
 <script>
-  // 已更新為您提供的專屬 Apps Script Web App 網址
   const GAS_URL = "https://script.google.com/macros/s/AKfycbxj6kgSqTEKOuQ-F7yoTksRhzao0K2Qr-uUKaINWWQfdUgbHlDjBe3jy-_wWMAWG5wZ/exec";
   const ADMIN_PASS = "4321";
   let isAdmin = false;
   let hostData = null;
   let currentTab = "current";
-  
   let manualRevealedSet = new Set();
   let lastRevealedQ = -1;
 
   function toggleAdminMode() {
-    if (isAdmin) {
-      isAdmin = false;
-      applyAdminUI();
-      return;
-    }
+    if (isAdmin) { isAdmin = false; applyAdminUI(); return; }
     openPasswordModal();
   }
-
   function openPasswordModal() {
     const modal = document.getElementById("pwd-modal");
     const input = document.getElementById("admin-pwd-input");
-    input.value = "";
-    modal.style.display = "flex";
-    input.focus();
+    input.value = ""; modal.style.display = "flex"; input.focus();
   }
-
-  function closePasswordModal() {
-    document.getElementById("pwd-modal").style.display = "none";
-  }
-
+  function closePasswordModal() { document.getElementById("pwd-modal").style.display = "none"; }
   function submitPassword() {
     const input = document.getElementById("admin-pwd-input").value;
-    if (input === ADMIN_PASS) {
-      isAdmin = true;
-      closePasswordModal();
-      applyAdminUI();
-    } else {
-      alert("密碼錯誤！");
-      document.getElementById("admin-pwd-input").value = "";
-      document.getElementById("admin-pwd-input").focus();
-    }
+    if (input === ADMIN_PASS) { isAdmin = true; closePasswordModal(); applyAdminUI(); }
+    else { alert("密碼錯誤！"); document.getElementById("admin-pwd-input").value = ""; }
   }
-
   function applyAdminUI() {
     const controls = document.querySelectorAll(".admin-ctrl");
     const authBtn = document.getElementById("auth-btn");
     const badge = document.getElementById("admin-badge");
-
     if (isAdmin) {
       controls.forEach(el => el.classList.remove("admin-locked"));
-      authBtn.innerText = "🔒 退出管理員";
-      authBtn.className = "btn btn-gray";
-      badge.innerText = "管理員模式";
-      badge.className = "badge-status badge-unlocked";
-      if (hostData && hostData.currentQ === 0) {
-        document.getElementById("start-game-btn").style.display = "inline-block";
-      }
+      authBtn.innerText = "🔒 退出管理員"; authBtn.className = "btn btn-gray";
+      badge.innerText = "管理員模式"; badge.className = "badge-status badge-unlocked";
+      if (hostData && hostData.currentQ === 0) document.getElementById("start-game-btn").style.display = "inline-block";
     } else {
       controls.forEach(el => el.classList.add("admin-locked"));
-      authBtn.innerText = "🔑 管理員登入";
-      authBtn.className = "btn btn-blue";
-      badge.innerText = "看板模式";
-      badge.className = "badge-status badge-locked";
+      authBtn.innerText = "🔑 管理員登入"; authBtn.className = "btn btn-blue";
+      badge.innerText = "看板模式"; badge.className = "badge-status badge-locked";
     }
   }
 
@@ -301,15 +218,8 @@
   window.onload = function() {
     const playerUrl = window.location.href.replace(/host\.html.*$/, 'index.html');
     document.getElementById("student-url").innerText = playerUrl;
-    
-    new QRCode(document.getElementById("qrcode"), {
-      text: playerUrl,
-      width: 200,
-      height: 200
-    });
-
-    loadData();
-    setInterval(loadData, 3000);
+    new QRCode(document.getElementById("qrcode"), { text: playerUrl, width: 200, height: 200 });
+    loadData(); setInterval(loadData, 3000);
   };
 
   async function loadData() {
@@ -317,7 +227,6 @@
       const res = await fetch(`${GAS_URL}?action=getHostData&t=${Date.now()}`);
       const data = await res.json();
       hostData = data;
-
       renderPlayers(data.players || []);
 
       if (data.currentQ === 0) {
@@ -330,10 +239,7 @@
         document.getElementById("start-game-btn").style.display = "none";
 
         if (data.isRevealed === true) {
-          if (lastRevealedQ !== data.currentQ) {
-            manualRevealedSet.clear();
-            lastRevealedQ = data.currentQ;
-          }
+          if (lastRevealedQ !== data.currentQ) { manualRevealedSet.clear(); lastRevealedQ = data.currentQ; }
           document.getElementById("reveal-hint").style.display = "inline";
           renderRevealedPassage(data);
         } else {
@@ -342,39 +248,25 @@
           document.getElementById("passage-box").innerText = data.text;
         }
       }
-
-      const isActuallyRevealed = (data.isRevealed === true);
-      renderCurrentQBoard(data.currentQStats || {}, isActuallyRevealed);
-      renderTotalBoard(data.totalStats || {}, isActuallyRevealed);
-    } catch (e) {
-      console.error("更新失敗", e);
-    }
+      renderCurrentQBoard(data.currentQStats || {}, (data.isRevealed === true));
+      renderTotalBoard(data.totalStats || {}, (data.isRevealed === true));
+    } catch (e) { console.error("更新失敗", e); }
   }
 
   function renderPlayers(players) {
     document.getElementById("player-count").innerText = players.length;
     const box = document.getElementById("players-list");
-    if (players.length === 0) {
-      box.innerHTML = `<span style="color: #64748b; font-size: 0.95rem;">等待學生掃碼加入...</span>`;
-      return;
-    }
+    if (players.length === 0) { box.innerHTML = `<span style="color: #64748b; font-size: 0.95rem;">等待學生掃碼加入...</span>`; return; }
     box.innerHTML = players.map(name => `<span class="player-tag">👤 ${name}</span>`).join("");
   }
 
   function renderCurrentQBoard(currStats, isRevealed) {
     const tbody = document.getElementById("current-q-body");
     const thead = document.querySelector("#table-curr thead");
-
     if (isRevealed) {
       thead.innerHTML = `<tr><th>姓名</th><th>抓對</th><th>誤抓</th><th>漏抓</th><th>本題得分</th></tr>`;
-      const list = Object.entries(currStats).map(([name, s]) => ({ name, ...s }))
-        .sort((a, b) => b.score - a.score);
-
-      if (list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: #64748b;">本題尚無作答數據</td></tr>`;
-        return;
-      }
-
+      const list = Object.entries(currStats).map(([name, s]) => ({ name, ...s })).sort((a, b) => b.score - a.score);
+      if (list.length === 0) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: #64748b;">本題尚無作答數據</td></tr>`; return; }
       tbody.innerHTML = list.map(item => `
         <tr>
           <td><b>${item.name}</b></td>
@@ -387,12 +279,7 @@
     } else {
       thead.innerHTML = `<tr><th>姓名</th><th>作答進度</th><th>本題得分</th></tr>`;
       const list = Object.entries(currStats).map(([name, s]) => ({ name, ...s }));
-
-      if (list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color: #64748b;">等待學生作答中...</td></tr>`;
-        return;
-      }
-
+      if (list.length === 0) { tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color: #64748b;">等待學生作答中...</td></tr>`; return; }
       tbody.innerHTML = list.map(item => `
         <tr>
           <td><b>${item.name}</b></td>
@@ -405,14 +292,8 @@
 
   function renderTotalBoard(totalStats, isRevealed) {
     const tbody = document.getElementById("total-body");
-    const list = Object.entries(totalStats).map(([name, s]) => ({ name, ...s }))
-      .sort((a, b) => b.score - a.score);
-
-    if (list.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: #64748b;">等待作答中...</td></tr>`;
-      return;
-    }
-
+    const list = Object.entries(totalStats).map(([name, s]) => ({ name, ...s })).sort((a, b) => b.score - a.score);
+    if (list.length === 0) { tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: #64748b;">等待作答中...</td></tr>`; return; }
     tbody.innerHTML = list.map((item, idx) => `
       <tr>
         <td>${idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : idx + 1}</td>
@@ -427,23 +308,15 @@
     `).join("");
   }
 
-  async function startFirstQuestion() {
-    await fetch(`${GAS_URL}?action=switchQuestion&qIndex=1&t=${Date.now()}`);
-    loadData();
-  }
-
+  async function startFirstQuestion() { await fetch(`${GAS_URL}?action=switchQuestion&qIndex=1&t=${Date.now()}`); loadData(); }
   async function changeQuestion(offset) {
     if (!hostData || hostData.currentQ === 0) return alert("請先點擊【🚀 開始第 1 題】！");
     const nextQ = hostData.currentQ + offset;
-    if (nextQ < 1 || nextQ > hostData.totalQuestions) {
-      return alert("已經沒有更多題目了！");
-    }
-
+    if (nextQ < 1 || nextQ > hostData.totalQuestions) return alert("已經沒有更多題目了！");
     manualRevealedSet.clear();
     await fetch(`${GAS_URL}?action=switchQuestion&qIndex=${nextQ}&t=${Date.now()}`);
     loadData();
   }
-
   async function revealAnswers() {
     if (!hostData || hostData.currentQ === 0) return alert("挑戰尚未開始！");
     manualRevealedSet.clear();
@@ -452,50 +325,60 @@
   }
 
   function flipCard(idx) {
-    if (manualRevealedSet.has(idx)) {
-      manualRevealedSet.delete(idx);
-    } else {
-      manualRevealedSet.add(idx);
-    }
+    if (manualRevealedSet.has(idx)) manualRevealedSet.delete(idx);
+    else manualRevealedSet.add(idx);
     renderRevealedPassage(hostData);
   }
 
+  // 採用 Token 化安全渲染，徹底杜絕 HTML 標籤屬性被英文取代的錯誤
   function renderRevealedPassage(data) {
-    let html = data.text;
-    data.typos.forEach((typo, i) => {
-      const correct = data.corrections[i] || "";
-      const regex = new RegExp(typo, "g");
-      
-      let badgeHtml = "";
-      if (manualRevealedSet.has(i)) {
-        badgeHtml = `<span class="correction-badge" onclick="flipCard(${i})" title="點擊重新蓋牌">應為: ${correct}</span>`;
-      } else {
-        badgeHtml = `<span class="mystery-card" onclick="flipCard(${i})" title="點擊揭露正確答案">❓ 點擊翻牌</span>`;
-      }
+    const box = document.getElementById("passage-box");
+    box.innerHTML = "";
 
-      html = html.replace(regex, `<span class="highlight-typo">${typo}</span>${badgeHtml}`);
+    // 支援中文字、英文單字與標點分詞
+    const tokens = data.text.match(/[\w'-]+|[^\s\w]|[\s]/g) || [data.text];
+
+    tokens.forEach(tok => {
+      // 比對是否為錯字
+      const typoIdx = data.typos.findIndex(t => t.toLowerCase() === tok.trim().toLowerCase());
+
+      if (typoIdx !== -1 && tok.trim().length > 0) {
+        const spanTypo = document.createElement("span");
+        spanTypo.className = "highlight-typo";
+        spanTypo.innerText = tok;
+        box.appendChild(spanTypo);
+
+        const correct = data.corrections[typoIdx] || "";
+        const badge = document.createElement("span");
+
+        if (manualRevealedSet.has(typoIdx)) {
+          badge.className = "correction-badge";
+          badge.innerText = `應為: ${correct}`;
+          badge.title = "點擊重新蓋牌";
+        } else {
+          badge.className = "mystery-card";
+          badge.innerText = "❓ 點擊翻牌";
+          badge.title = "點擊揭露正確答案";
+        }
+        badge.onclick = () => flipCard(typoIdx);
+        box.appendChild(badge);
+      } else {
+        box.appendChild(document.createTextNode(tok));
+      }
     });
-    document.getElementById("passage-box").innerHTML = html;
   }
 
   function exportToExcel() {
-    if (!hostData || Object.keys(hostData.totalStats).length === 0) {
-      return alert("目前沒有作答紀錄可匯出！");
-    }
-
+    if (!hostData || Object.keys(hostData.totalStats).length === 0) return alert("目前沒有作答紀錄可匯出！");
     const exportData = Object.entries(hostData.totalStats).map(([name, stat], idx) => ({
-      "排名": idx + 1,
-      "姓名/座號": name,
-      "累計抓對字數": stat.correctCount,
-      "累計誤抓字數": stat.wrongCount,
-      "累計漏抓錯字": stat.missedCount,
-      "總積分": stat.score
+      "排名": idx + 1, "姓名/座號": name,
+      "累計抓對字數": stat.correctCount, "累計誤抓字數": stat.wrongCount,
+      "累計漏抓錯字": stat.missedCount, "總積分": stat.score
     })).sort((a, b) => b["總積分"] - a["總積分"]);
-
     const worksheet = XLSX.utils.json_to_sheet(exportData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "挑戰總成績");
-    XLSX.writeFile(workbook, `抓錯字挑戰累計成績單_${new Date().toISOString().slice(0,10)}.xlsx`);
+    XLSX.writeFile(workbook, `掠漏大車拚累計成績單_${new Date().toISOString().slice(0,10)}.xlsx`);
   }
 
   async function resetRound() {
