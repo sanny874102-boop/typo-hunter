@@ -57,8 +57,7 @@
 </div>
 
 <script>
-  // 已填入您提供的專屬 Apps Script Web App 網址
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbxLQV9VnWm5AoROdFM91ol79sVLSV2UzsDm4L6FK-yvfMlEodq83Y7cddyzc_0DDX9Z/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbzrmIUYGyWT_J5xAwzCRLQlOZPjM1kt50U9Bm77_rqltVOGMIzTiWKfnR_xsCVzJjpC/exec";
 
   let studentName = "";
   let currentQIndex = -1;
@@ -68,6 +67,7 @@
   let submittedTokensMap = [];
   let pollingTimer = null;
   let isCurrentQRevealed = false;
+  let currentSessionId = ""; // 紀錄當前場次
 
   async function joinGame() {
     studentName = document.getElementById("student-name").value.trim();
@@ -86,10 +86,13 @@
     document.getElementById("login-view").style.display = "none";
     document.getElementById("game-view").style.display = "block";
     document.getElementById("display-name").innerText = studentName;
+    joinBtn.innerText = "進入挑戰"; joinBtn.disabled = false;
+
     syncQuestion();
+    if (pollingTimer) clearInterval(pollingTimer);
     pollingTimer = setInterval(syncQuestion, 3000);
 
-    // 學生關閉視窗/離開分頁時，即時通報後端踢除並記錄時間
+    // 監聽學生離開 / 關閉分頁，精準記錄登出並在後端剔除
     window.addEventListener("beforeunload", () => {
       if (studentName) {
         const payload = JSON.stringify({ action: "logout", name: studentName });
@@ -98,10 +101,35 @@
     });
   }
 
+  // 被老師清空踢出時執行的強制登出
+  function kickOutStudent() {
+    if (pollingTimer) clearInterval(pollingTimer);
+    studentName = "";
+    currentQIndex = -1;
+    currentSessionId = "";
+    selectedTokens = [];
+    submittedTokensMap = [];
+
+    alert("⚠️ 老師已清空遊戲紀錄並重設系統，請重新輸入姓名加入！");
+    document.getElementById("student-name").value = "";
+    document.getElementById("game-view").style.display = "none";
+    document.getElementById("login-view").style.display = "block";
+  }
+
   async function syncQuestion() {
     try {
       const res = await fetch(`${GAS_URL}?action=getCurrentQuestion&t=${Date.now()}`);
       const data = await res.json();
+
+      // 檢查場次是否被重設（若初次取得則記錄；若後續發現場次變更，立即剔除）
+      if (data.sessionId) {
+        if (!currentSessionId) {
+          currentSessionId = data.sessionId;
+        } else if (currentSessionId !== data.sessionId) {
+          kickOutStudent();
+          return;
+        }
+      }
 
       if (data.qIndex !== currentQIndex) {
         currentQIndex = data.qIndex;
