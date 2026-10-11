@@ -25,40 +25,48 @@
       word-break: break-word;
     }
     
+    /* 紅色錯字標籤 */
     .highlight-typo { 
       background-color: #ef4444; 
       color: white; 
-      padding: 3px 8px; 
+      padding: 2px 8px; 
       border-radius: 6px; 
       font-weight: bold; 
       display: inline-block;
       margin: 0 4px;
+      font-size: 2rem;
     }
+
+    /* 綠色正確答案標籤：字體調至 2rem 與題目相同，移除應為字樣後的緊湊排版 */
     .correction-badge { 
       background-color: #22c55e; 
       color: white; 
-      font-size: 1.15rem; 
-      padding: 3px 8px; 
+      font-size: 2rem; 
+      padding: 2px 10px; 
       border-radius: 6px; 
       margin-left: 4px; 
       display: inline-block;
-      vertical-align: middle;
+      vertical-align: baseline;
+      font-weight: bold;
       cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     }
+
+    /* 蓋牌神秘卡片：字體調整為 1.4rem，維持良好可讀性 */
     .mystery-card {
       background-color: #f59e0b;
       color: #0f172a;
-      font-size: 1.05rem;
-      font-weight: bold;
-      padding: 3px 8px;
-      border-radius: 6px;
-      margin-left: 4px;
-      cursor: pointer;
-      display: inline-block;
-      vertical-align: middle;
-      border: 2px dashed #b45309;
-      user-select: none;
-      transition: 0.2s;
+      font-size: 1.4rem; 
+      font-weight: bold; 
+      padding: 3px 10px; 
+      border-radius: 6px; 
+      margin-left: 4px; 
+      cursor: pointer; 
+      display: inline-block; 
+      vertical-align: baseline;
+      border: 2px dashed #b45309; 
+      user-select: none; 
+      transition: 0.2s; 
     }
     .mystery-card:hover { background-color: #fbbf24; transform: scale(1.05); }
 
@@ -330,16 +338,14 @@
     renderRevealedPassage(hostData);
   }
 
-  // 採用 Token 化安全渲染，徹底杜絕 HTML 標籤屬性被英文取代的錯誤
+  // 渲染解答：字體與題目相同（2rem），且刪除「應為:」字樣
   function renderRevealedPassage(data) {
     const box = document.getElementById("passage-box");
     box.innerHTML = "";
 
-    // 支援中文字、英文單字與標點分詞
     const tokens = data.text.match(/[\w'-]+|[^\s\w]|[\s]/g) || [data.text];
 
     tokens.forEach(tok => {
-      // 比對是否為錯字
       const typoIdx = data.typos.findIndex(t => t.toLowerCase() === tok.trim().toLowerCase());
 
       if (typoIdx !== -1 && tok.trim().length > 0) {
@@ -353,11 +359,11 @@
 
         if (manualRevealedSet.has(typoIdx)) {
           badge.className = "correction-badge";
-          badge.innerText = `應為: ${correct}`;
+          badge.innerText = correct; // 刪除「應為:」，只顯示正確答案
           badge.title = "點擊重新蓋牌";
         } else {
           badge.className = "mystery-card";
-          badge.innerText = "❓ 點擊翻牌";
+          badge.innerText = "❓ 翻牌";
           badge.title = "點擊揭露正確答案";
         }
         badge.onclick = () => flipCard(typoIdx);
